@@ -94,24 +94,23 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
         newErrors.startDate = "Start date cannot be in the past";
       } else {
         const dayOfWeek = startDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const currentYear = new Date().getFullYear();
 
         if (selectedLocation === "abuDhabi") {
-          const abuDhabiStart = new Date("2024-07-01");
-          const abuDhabiEnd = new Date("2024-08-21");
+          const abuDhabiStart = new Date(`${currentYear}-07-01`);
+          const abuDhabiEnd = new Date(`${currentYear}-08-21`);
 
           if (startDate < abuDhabiStart || startDate > abuDhabiEnd) {
-            newErrors.startDate =
-              "Camp in Abu Dhabi runs from July 1 to August 21";
+            newErrors.startDate = `Camp in Abu Dhabi runs from July 1 to August 21, ${currentYear}`;
           } else if (dayOfWeek === 0 || dayOfWeek === 6) {
             newErrors.startDate = "Camp in Abu Dhabi runs Monday to Friday";
           }
         } else if (selectedLocation === "alAin") {
-          const alAinStart = new Date("2024-07-05");
-          const alAinEnd = new Date("2024-08-19");
+          const alAinStart = new Date(`${currentYear}-07-05`);
+          const alAinEnd = new Date(`${currentYear}-08-19`);
 
           if (startDate < alAinStart || startDate > alAinEnd) {
-            newErrors.startDate =
-              "Camp in Al Ain runs from July 5 to August 19";
+            newErrors.startDate = `Camp in Al Ain runs from July 5 to August 19, ${currentYear}`;
           } else if (dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6) {
             newErrors.startDate = "Camp in Al Ain runs Monday to Thursday";
           }
@@ -127,14 +126,14 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
 
             if (
               selectedLocation === "abuDhabi" &&
-              lastDay > new Date("2024-08-21")
+              lastDay > new Date(`${currentYear}-08-21`)
             ) {
-              newErrors.startDate = "3-day plan must be completed by August 21";
+              newErrors.startDate = `3-day plan must be completed by August 21, ${currentYear}`;
             } else if (
               selectedLocation === "alAin" &&
-              lastDay > new Date("2024-08-19")
+              lastDay > new Date(`${currentYear}-08-19`)
             ) {
-              newErrors.startDate = "3-day plan must be completed by August 19";
+              newErrors.startDate = `3-day plan must be completed by August 19, ${currentYear}`;
             }
           } else if (
             planName.includes("5-day") ||
@@ -146,14 +145,14 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
 
             if (
               selectedLocation === "abuDhabi" &&
-              lastDay > new Date("2024-08-21")
+              lastDay > new Date(`${currentYear}-08-21`)
             ) {
-              newErrors.startDate = "5-day plan must be completed by August 21";
+              newErrors.startDate = `5-day plan must be completed by August 21, ${currentYear}`;
             } else if (
               selectedLocation === "alAin" &&
-              lastDay > new Date("2024-08-19")
+              lastDay > new Date(`${currentYear}-08-19`)
             ) {
-              newErrors.startDate = "5-day plan must be completed by August 19";
+              newErrors.startDate = `5-day plan must be completed by August 19, ${currentYear}`;
             }
           }
         }
@@ -473,6 +472,12 @@ Summer Camp Team
                   <Input
                     id="startDate"
                     type="date"
+                    min={`${new Date().getFullYear()}-${
+                      selectedLocation === "abuDhabi" ? "07-01" : "07-05"
+                    }`}
+                    max={`${new Date().getFullYear()}-${
+                      selectedLocation === "abuDhabi" ? "08-21" : "08-19"
+                    }`}
                     value={formData.startDate}
                     onChange={(e) =>
                       setFormData({ ...formData, startDate: e.target.value })
