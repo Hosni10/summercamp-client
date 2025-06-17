@@ -2,7 +2,15 @@
 import { loadStripe } from "@stripe/stripe-js";
 
 // Initialize Stripe with your publishable key from environment variables
-const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY);
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
+  .then((stripe) => {
+    console.log("Stripe loaded successfully");
+    return stripe;
+  })
+  .catch((error) => {
+    console.error("Error loading Stripe:", error);
+    return null;
+  });
 
 export { stripePromise };
 
@@ -19,24 +27,36 @@ export const convertToCents = (amount) => {
   return Math.round(amount * 100);
 };
 
-// Simulate PaymentIntent creation (in production, this would be done on your backend)
+// Create PaymentIntent by calling the backend
 export const createPaymentIntent = async (amount, currency = "aed") => {
-  // This is a simulation - in production, you would call your backend API
-  // which would create a PaymentIntent using Stripe's server-side API
+  try {
+    console.log("Creating payment intent for amount:", amount);
+    const response = await fetch(
+      "http://localhost:5000/create-payment-intent",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          amount,
+          currency,
+        }),
+      }
+    );
 
-  // For demo purposes, we'll simulate the response
-  const paymentIntent = {
-    id: `pi_${Math.random().toString(36).substr(2, 9)}`,
-    client_secret: `pi_${Math.random()
-      .toString(36)
-      .substr(2, 9)}_secret_${Math.random().toString(36).substr(2, 9)}`,
-    amount: convertToCents(amount),
-    currency: currency,
-    status: "requires_payment_method",
-  };
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || "Failed to create payment intent");
+    }
 
-  // Simulate API delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  return paymentIntent;
+    const data = await response.json();
+    console.log("Payment intent created successfully");
+    return {
+      client_secret: data.clientSecret,
+    };
+  } catch (error) {
+    console.error("Error creating payment intent:", error);
+    throw error;
+  }
 };

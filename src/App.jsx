@@ -56,7 +56,7 @@ const campPlans = {
     {
       name: "5-Days Access",
       description: "Most popular choice for a week",
-      price: 1000,
+      price: 800,
       features: [
         "Access to all activities for 5 days",
         "Access to both Kids Camp (8:30 AM - 2 PM) and Football Clinic",

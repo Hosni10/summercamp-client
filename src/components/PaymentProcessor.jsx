@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/card.jsx";
 import { Badge } from "@/components/ui/badge.jsx";
 import { CreditCard, Lock, CheckCircle, AlertCircle, X } from "lucide-react";
+import { loadStripe } from "@stripe/stripe-js";
 
 // Stripe Elements styling
 const cardElementOptions = {
@@ -46,14 +47,25 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [clientSecret, setClientSecret] = useState(null);
+  const [isStripeReady, setIsStripeReady] = useState(false);
+
+  useEffect(() => {
+    if (stripe && elements) {
+      setIsStripeReady(true);
+      console.log("Stripe Elements is ready");
+    }
+  }, [stripe, elements]);
 
   // Create PaymentIntent when component mounts
   useEffect(() => {
     const initializePayment = async () => {
       try {
+        console.log("Initializing payment for plan:", bookingData.plan);
         const paymentIntent = await createPaymentIntent(bookingData.plan.price);
+        console.log("Payment intent created:", paymentIntent);
         setClientSecret(paymentIntent.client_secret);
       } catch (error) {
+        console.error("Failed to initialize payment:", error);
         setPaymentError("Failed to initialize payment. Please try again.");
       }
     };
@@ -63,8 +75,12 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
-    console.log("paymenttttttttttttttttttttttttttttttttttt");
     if (!stripe || !elements || !clientSecret) {
+      console.error("Missing required payment data:", {
+        stripe: !!stripe,
+        elements: !!elements,
+        clientSecret: !!clientSecret,
+      });
       return;
     }
 
@@ -72,40 +88,45 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
     setPaymentError(null);
 
     const cardElement = elements.getElement(CardElement);
-    console.log(
-      { clientSecret, cardElement, bookingData },
-      "leeeeeeeeeeeeeeeeh"
-    );
+    console.log("Processing payment with card element");
 
-    // Confirm payment with Stripe
-    const { error, paymentIntent } = await stripe.confirmCardPayment(
-      clientSecret,
-      {
-        payment_method: {
-          card: cardElement,
-          billing_details: {
-            name: bookingData.parentName,
-            email: bookingData.parentEmail,
-            phone: bookingData.parentPhone,
-            address: {
-              line1: bookingData.parentAddress,
+    try {
+      // Confirm payment with Stripe
+      const { error, paymentIntent } = await stripe.confirmCardPayment(
+        clientSecret,
+        {
+          payment_method: {
+            card: cardElement,
+            billing_details: {
+              name: bookingData.parentName,
+              email: bookingData.parentEmail,
+              phone: bookingData.parentPhone,
+              address: {
+                line1: bookingData.parentAddress,
+              },
             },
           },
-        },
-      }
-    );
+        }
+      );
 
-    setIsProcessing(false);
-    console.log(error);
-    if (error) {
-      setPaymentError(error.message);
+      if (error) {
+        console.error("Payment error:", error);
+        setPaymentError(error.message);
+        onError(error);
+      } else if (paymentIntent.status === "succeeded") {
+        console.log("Payment succeeded:", paymentIntent);
+        onSuccess({
+          paymentId: paymentIntent.id,
+          amount: paymentIntent.amount,
+          currency: paymentIntent.currency,
+        });
+      }
+    } catch (error) {
+      console.error("Unexpected payment error:", error);
+      setPaymentError("An unexpected error occurred. Please try again.");
       onError(error);
-    } else if (paymentIntent.status === "succeeded") {
-      onSuccess({
-        paymentId: paymentIntent.id,
-        amount: paymentIntent.amount,
-        currency: paymentIntent.currency,
-      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -119,7 +140,11 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
         </div>
 
         <div className="border rounded-lg p-4 bg-gray-50">
-          <CardElement options={cardElementOptions} />
+          {isStripeReady ? (
+            <CardElement options={cardElementOptions} />
+          ) : (
+            <div className="text-gray-500">Loading payment form...</div>
+          )}
         </div>
 
         {paymentError && (
@@ -167,7 +192,7 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
         </Button>
         <Button
           type="submit"
-          disabled={!stripe || isProcessing || !clientSecret}
+          disabled={!isStripeReady || isProcessing || !clientSecret}
           className="flex-1 bg-blue-600 hover:bg-blue-700"
         >
           {isProcessing ? (
@@ -188,6 +213,19 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
 const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
   const [paymentStatus, setPaymentStatus] = useState("form"); // 'form', 'success', 'error'
   const [paymentResult, setPaymentResult] = useState(null);
+  const [stripePromise, setStripePromise] = useState(null);
+
+  useEffect(() => {
+    // Initialize Stripe
+    const initStripe = async () => {
+      const stripe = await loadStripe(
+        import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
+      );
+      console.log("Stripe initialized:", !!stripe);
+      setStripePromise(stripe);
+    };
+    initStripe();
+  }, []);
 
   const handlePaymentSuccess = (result) => {
     setPaymentResult(result);
@@ -286,14 +324,16 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
           </div>
 
           {/* Stripe Elements Payment Form */}
-          <Elements stripe={stripePromise}>
-            <PaymentForm
-              bookingData={bookingData}
-              onSuccess={handlePaymentSuccess}
-              onError={handlePaymentError}
-              onCancel={onCancel}
-            />
-          </Elements>
+          {stripePromise && (
+            <Elements stripe={stripePromise}>
+              <PaymentForm
+                bookingData={bookingData}
+                onSuccess={handlePaymentSuccess}
+                onError={handlePaymentError}
+                onCancel={onCancel}
+              />
+            </Elements>
+          )}
         </CardContent>
       </Card>
     </div>
