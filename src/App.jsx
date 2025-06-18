@@ -18,7 +18,7 @@ import {
   Mail,
   Check,
 } from "lucide-react";
-import afcLogo from "./assets/AFC-logo.svg";
+import afcLogo from "./assets/AFC-Logo.svg";
 import heroImage from "./assets/background.jpeg";
 import kidsCampImage from "./assets/kids-camp.jpeg";
 import footballClinicImage from "./assets/football-clinic.jpeg";
