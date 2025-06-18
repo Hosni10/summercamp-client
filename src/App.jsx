@@ -18,6 +18,7 @@ import {
   Mail,
   Check,
 } from "lucide-react";
+import afcLogo from "./assets/AFC-logo.svg";
 import heroImage from "./assets/background.jpeg";
 import kidsCampImage from "./assets/kids-camp.jpeg";
 import footballClinicImage from "./assets/football-clinic.jpeg";
@@ -293,9 +294,9 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <Trophy className="h-8 w-8 text-blue-600" />
+              <img src={afcLogo} alt="AFC Logo" className="h-14 w-auto" />
               <span className="text-xl font-bold text-gray-900">
-                SportsCamp UAE
+                Atomics Summer Camp
               </span>
             </div>
             <nav className="hidden md:flex space-x-8">
@@ -715,14 +716,14 @@ function App() {
       <footer className="bg-gray-900 text-white py-8 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto text-center">
           <div className="flex items-center justify-center space-x-2 mb-4">
-            <Trophy className="h-6 w-6" />
-            <span className="text-lg font-semibold">SportsCamp UAE</span>
+            <img src={afcLogo} alt="AFC Logo" className="h-6 w-auto" />
+            <span className="text-lg font-semibold">Atomics Summer Camp</span>
           </div>
           <p className="text-gray-400 mb-4">
             Creating champions through sports, building character through play.
           </p>
           <p className="text-sm text-gray-500">
-            © 2025 SportsCamp UAE. All rights reserved.
+            © 2025 Atomics Summer Camp UAE. All rights reserved.
           </p>
         </div>
       </footer>
