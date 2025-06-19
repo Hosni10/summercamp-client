@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge.jsx";
 import { CreditCard, Lock, CheckCircle, AlertCircle, X } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
+import { format, addDays } from "date-fns";
 
 // Stripe Elements styling
 const cardElementOptions = {
@@ -60,18 +61,21 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
   useEffect(() => {
     const initializePayment = async () => {
       try {
-        console.log("Initializing payment for plan:", bookingData.plan);
-        const paymentIntent = await createPaymentIntent(bookingData.plan.price);
-        console.log("Payment intent created:", paymentIntent);
+        // Use discounted total if available, otherwise fallback to plan price
+        let amount = bookingData?.pricing?.total ?? bookingData.plan.price;
+        amount = Number(amount);
+        if (isNaN(amount) || amount <= 0)
+          throw new Error("Invalid payment amount");
+        console.log("Initializing payment for amount:", amount);
+        const paymentIntent = await createPaymentIntent(amount);
         setClientSecret(paymentIntent.client_secret);
       } catch (error) {
         console.error("Failed to initialize payment:", error);
         setPaymentError("Failed to initialize payment. Please try again.");
       }
     };
-
     initializePayment();
-  }, [bookingData.plan.price]);
+  }, [bookingData?.pricing?.total, bookingData.plan.price]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -147,6 +151,14 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
           )}
         </div>
 
+        {/* Show the amount to be paid */}
+        <div className="flex justify-between items-center mt-2">
+          <span className="font-medium">Amount to Pay:</span>
+          <Badge className="bg-blue-600 text-white text-lg">
+            AED {bookingData?.pricing?.total ?? bookingData.plan.price}
+          </Badge>
+        </div>
+
         {paymentError && (
           <div className="flex items-center gap-2 text-red-600 text-sm">
             <AlertCircle className="h-4 w-4" />
@@ -201,7 +213,7 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
               Processing...
             </div>
           ) : (
-            `Pay ${formatCurrency(bookingData.plan.price)}`
+            `Pay AED ${bookingData?.pricing?.total ?? bookingData.plan.price}`
           )}
         </Button>
       </div>
@@ -240,6 +252,41 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
     onError(error);
   };
 
+  const getAccessPeriod = (startDate, planName, location) => {
+    const start = new Date(startDate);
+    let end;
+    let description = "";
+    if (!startDate || !planName) return null;
+    if (planName.toLowerCase().includes("1-day")) {
+      end = start;
+      description = "1 day access (Monday to Friday only)";
+    } else if (planName.toLowerCase().includes("3-day")) {
+      end = addDays(start, 2);
+      description = "3 days access within one week (Monday to Friday only)";
+    } else if (planName.toLowerCase().includes("5-day")) {
+      end = addDays(start, 4);
+      description = "5 days access within one week (Monday to Friday only)";
+    } else if (planName.toLowerCase().includes("10-day")) {
+      end = addDays(start, 9);
+      description = "10 days access within two weeks";
+    } else if (planName.toLowerCase().includes("20-day")) {
+      end = addDays(start, 19);
+      description = "20 days access within two weeks from start date";
+    } else if (planName.toLowerCase().includes("full camp")) {
+      end =
+        location === "abuDhabi"
+          ? new Date("2024-08-21")
+          : new Date("2024-08-19");
+      description = "Full camp access (unlimited days)";
+    }
+    return {
+      start: format(start, "MMMM d, yyyy"),
+      end: format(end, "MMMM d, yyyy"),
+      days: Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1,
+      description,
+    };
+  };
+
   if (paymentStatus === "success") {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -259,7 +306,9 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
               </p>
               <p>
                 <strong>Amount:</strong>{" "}
-                {formatCurrency(bookingData.plan.price)}
+                {formatCurrency(
+                  bookingData?.pricing?.total ?? bookingData.plan.price
+                )}
               </p>
             </div>
           </CardContent>
@@ -302,13 +351,33 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
                 <span>Plan:</span>
                 <span className="font-medium">{bookingData.plan.name}</span>
               </div>
+              {/* Duration */}
+              {(() => {
+                const access = getAccessPeriod(
+                  bookingData.startDate,
+                  bookingData.plan.name,
+                  bookingData.location
+                );
+                return access ? (
+                  <div className="flex flex-col gap-1">
+                    <div className="flex justify-between">
+                      <span>Duration:</span>
+                      <span>{access.days} days</span>
+                    </div>
+                    <div className="flex justify-end text-xs text-gray-600 italic">
+                      {access.description}
+                    </div>
+                  </div>
+                ) : null;
+              })()}
+              {/* Child Names */}
               <div className="flex justify-between">
-                <span>Duration:</span>
-                <span>{bookingData.plan.duration}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Child:</span>
-                <span>{bookingData.childName}</span>
+                <span>Children:</span>
+                <span>
+                  {bookingData.children && bookingData.children.length > 0
+                    ? bookingData.children.map((c, i) => c.name).join(", ")
+                    : "-"}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Start Date:</span>
@@ -317,7 +386,9 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
               <div className="flex justify-between items-center pt-2 border-t border-blue-200">
                 <span className="font-semibold">Total:</span>
                 <Badge variant="secondary" className="bg-blue-600 text-white">
-                  {formatCurrency(bookingData.plan.price)}
+                  {formatCurrency(
+                    bookingData.pricing?.total ?? bookingData.plan.price
+                  )}
                 </Badge>
               </div>
             </div>

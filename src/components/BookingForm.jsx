@@ -34,13 +34,26 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
     parentEmail: "",
     parentPhone: "",
     parentAddress: "",
-    childName: "",
-    childAge: "",
-    childGender: "",
+    numberOfChildren: 1,
+    children: [{ name: "", age: "", gender: "" }],
     startDate: "",
   });
 
   const [errors, setErrors] = useState({});
+
+  // Sibling discount logic
+  const calculateDiscount = (num) => {
+    if (num === 1) return 0;
+    if (num === 2) return 10;
+    if (num === 3) return 15;
+    return 20;
+  };
+  const basePrice = parseInt(selectedPlan.price);
+  const numChildren = parseInt(formData.numberOfChildren);
+  const discount = calculateDiscount(numChildren);
+  const subtotal = basePrice * numChildren;
+  const discountAmount = (subtotal * discount) / 100;
+  const total = subtotal - discountAmount;
 
   const validateForm = () => {
     const newErrors = {};
@@ -49,19 +62,13 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
       "parentEmail",
       "parentPhone",
       "parentAddress",
-      "childName",
-      "childAge",
-      "childGender",
       "startDate",
     ];
-
-    // Check required fields
     requiredFields.forEach((field) => {
       if (!formData[field]) {
         newErrors[field] = "This field is required";
       }
     });
-
     // Email validation
     if (
       formData.parentEmail &&
@@ -69,7 +76,6 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
     ) {
       newErrors.parentEmail = "Please enter a valid email address";
     }
-
     // Phone validation (UAE format)
     if (
       formData.parentPhone &&
@@ -77,29 +83,30 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
     ) {
       newErrors.parentPhone = "Please enter a valid UAE phone number";
     }
-
-    // Age validation
-    const age = parseInt(formData.childAge);
-    if (isNaN(age) || age < 6 || age > 18) {
-      newErrors.childAge = "Child must be between 6 and 18 years old";
-    }
-
-    // Date validation
+    // Children validation
+    formData.children.forEach((child, idx) => {
+      if (!child.name) newErrors[`childName_${idx}`] = "This field is required";
+      const age = parseInt(child.age);
+      if (isNaN(age) || age < 4 || age > 12) {
+        newErrors[`childAge_${idx}`] =
+          "Child must be between 4 and 12 years old";
+      }
+      if (!child.gender)
+        newErrors[`childGender_${idx}`] = "This field is required";
+    });
+    // Date validation (reuse existing logic)
     if (formData.startDate) {
       const startDate = new Date(formData.startDate);
       const today = new Date();
       today.setHours(0, 0, 0, 0);
-
       if (startDate < today) {
         newErrors.startDate = "Start date cannot be in the past";
       } else {
-        const dayOfWeek = startDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+        const dayOfWeek = startDate.getDay();
         const currentYear = new Date().getFullYear();
-
         if (selectedLocation === "abuDhabi") {
           const abuDhabiStart = new Date(`${currentYear}-07-01`);
           const abuDhabiEnd = new Date(`${currentYear}-08-21`);
-
           if (startDate < abuDhabiStart || startDate > abuDhabiEnd) {
             newErrors.startDate = `Camp in Abu Dhabi runs from July 1 to August 21, ${currentYear}`;
           } else if (dayOfWeek === 0 || dayOfWeek === 6) {
@@ -108,59 +115,35 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
         } else if (selectedLocation === "alAin") {
           const alAinStart = new Date(`${currentYear}-07-05`);
           const alAinEnd = new Date(`${currentYear}-08-19`);
-
           if (startDate < alAinStart || startDate > alAinEnd) {
             newErrors.startDate = `Camp in Al Ain runs from July 5 to August 19, ${currentYear}`;
           } else if (dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6) {
             newErrors.startDate = "Camp in Al Ain runs Monday to Thursday";
           }
         }
-
-        // Validate plan-specific date requirements
-        if (selectedPlan) {
-          const planName = selectedPlan.name.toLowerCase();
-          if (planName.includes("3-day") || planName.includes("3 days")) {
-            // Check if the selected date allows for 3 consecutive days
-            const lastDay = new Date(startDate);
-            lastDay.setDate(lastDay.getDate() + 2);
-
-            if (
-              selectedLocation === "abuDhabi" &&
-              lastDay > new Date(`${currentYear}-08-21`)
-            ) {
-              newErrors.startDate = `3-day plan must be completed by August 21, ${currentYear}`;
-            } else if (
-              selectedLocation === "alAin" &&
-              lastDay > new Date(`${currentYear}-08-19`)
-            ) {
-              newErrors.startDate = `3-day plan must be completed by August 19, ${currentYear}`;
-            }
-          } else if (
-            planName.includes("5-day") ||
-            planName.includes("5 days")
-          ) {
-            // Check if the selected date allows for 5 consecutive days
-            const lastDay = new Date(startDate);
-            lastDay.setDate(lastDay.getDate() + 4);
-
-            if (
-              selectedLocation === "abuDhabi" &&
-              lastDay > new Date(`${currentYear}-08-21`)
-            ) {
-              newErrors.startDate = `5-day plan must be completed by August 21, ${currentYear}`;
-            } else if (
-              selectedLocation === "alAin" &&
-              lastDay > new Date(`${currentYear}-08-19`)
-            ) {
-              newErrors.startDate = `5-day plan must be completed by August 19, ${currentYear}`;
-            }
-          }
-        }
       }
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const handleChildrenChange = (idx, field, value) => {
+    const updated = [...formData.children];
+    updated[idx][field] = value;
+    setFormData({ ...formData, children: updated });
+  };
+
+  const handleNumChildrenChange = (value) => {
+    const num = parseInt(value);
+    let updated = [...formData.children];
+    if (num > updated.length) {
+      for (let i = updated.length; i < num; i++) {
+        updated.push({ name: "", age: "", gender: "" });
+      }
+    } else {
+      updated = updated.slice(0, num);
+    }
+    setFormData({ ...formData, numberOfChildren: num, children: updated });
   };
 
   const calculateAccessPeriod = (startDate, planName) => {
@@ -204,7 +187,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
 Dear ${bookingData.parentName},
 
 Thank you for booking the ${selectedPlan.name} for your child ${
-        bookingData.childName
+        bookingData.children[0].name
       }.
 
 Booking Details:
@@ -274,12 +257,16 @@ Summer Camp Team
         ...formData,
         plan: selectedPlan,
         location: selectedLocation,
+        pricing: {
+          basePrice,
+          numChildren,
+          discount,
+          subtotal,
+          discountAmount,
+          total,
+        },
       };
-
-      // Send confirmation email
       await sendConfirmationEmail(bookingData);
-
-      // Proceed with the booking submission
       onSubmit(bookingData);
     }
   };
@@ -399,65 +386,90 @@ Summer Camp Team
 
             {/* Child Information */}
             <div>
-              <h3 className="text-lg font-semibold mb-4">Child Information</h3>
-              <div className="grid gap-4">
-                <div>
-                  <Label htmlFor="childName">Full Name</Label>
-                  <Input
-                    id="childName"
-                    value={formData.childName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, childName: e.target.value })
-                    }
-                  />
-                  {errors.childName && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.childName}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="childAge">Age</Label>
-                  <Input
-                    id="childAge"
-                    type="number"
-                    min="6"
-                    max="18"
-                    value={formData.childAge}
-                    onChange={(e) =>
-                      setFormData({ ...formData, childAge: e.target.value })
-                    }
-                  />
-                  {errors.childAge && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.childAge}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <Label htmlFor="childGender">Gender</Label>
-                  <Select
-                    value={formData.childGender}
-                    onValueChange={(value) =>
-                      setFormData({ ...formData, childGender: value })
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select gender" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="male">Male</SelectItem>
-                      <SelectItem value="female">Female</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {errors.childGender && (
-                    <p className="text-red-500 text-sm mt-1">
-                      {errors.childGender}
-                    </p>
-                  )}
-                </div>
+              <h3 className="text-lg font-semibold mb-4">
+                Children Information
+              </h3>
+              <div className="mb-4">
+                <Label htmlFor="numberOfChildren">Number of Children</Label>
+                <Select
+                  value={formData.numberOfChildren.toString()}
+                  onValueChange={handleNumChildrenChange}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">1</SelectItem>
+                    <SelectItem value="2">2</SelectItem>
+                    <SelectItem value="3">3</SelectItem>
+                    <SelectItem value="4">4</SelectItem>
+                    <SelectItem value="5">5</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid gap-6">
+                {formData.children.map((child, idx) => (
+                  <div key={idx} className="p-4 border rounded-lg bg-gray-50">
+                    <h4 className="font-semibold mb-2">Child {idx + 1}</h4>
+                    <div className="grid md:grid-cols-3 gap-4">
+                      <div>
+                        <Label htmlFor={`childName_${idx}`}>Full Name</Label>
+                        <Input
+                          id={`childName_${idx}`}
+                          value={child.name}
+                          onChange={(e) =>
+                            handleChildrenChange(idx, "name", e.target.value)
+                          }
+                        />
+                        {errors[`childName_${idx}`] && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors[`childName_${idx}`]}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor={`childAge_${idx}`}>Age</Label>
+                        <Input
+                          id={`childAge_${idx}`}
+                          type="number"
+                          min="4"
+                          max="12"
+                          value={child.age}
+                          onChange={(e) =>
+                            handleChildrenChange(idx, "age", e.target.value)
+                          }
+                        />
+                        {errors[`childAge_${idx}`] && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors[`childAge_${idx}`]}
+                          </p>
+                        )}
+                      </div>
+                      <div>
+                        <Label htmlFor={`childGender_${idx}`}>Gender</Label>
+                        <Select
+                          value={child.gender}
+                          onValueChange={(value) =>
+                            handleChildrenChange(idx, "gender", value)
+                          }
+                        >
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select gender" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="boy">Boy</SelectItem>
+                            <SelectItem value="girl">Girl</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        {errors[`childGender_${idx}`] && (
+                          <p className="text-red-500 text-sm mt-1">
+                            {errors[`childGender_${idx}`]}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
@@ -490,6 +502,55 @@ Summer Camp Team
                   )}
                 </div>
               </div>
+            </div>
+
+            {/* Pricing Summary */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-semibold">Pricing Summary</h3>
+              <div className="bg-gray-50 p-4 rounded-lg space-y-2">
+                <div className="flex justify-between">
+                  <span>Base Price per Child:</span>
+                  <span>AED {basePrice}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Number of Children:</span>
+                  <span>{numChildren}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Subtotal:</span>
+                  <span>AED {subtotal}</span>
+                </div>
+                {discount > 0 && (
+                  <>
+                    <div className="flex justify-between text-green-600">
+                      <span>Sibling Discount ({discount}%):</span>
+                      <span>-AED {discountAmount}</span>
+                    </div>
+                    <div className="border-t pt-2">
+                      <div className="flex justify-between font-bold text-lg">
+                        <span>Total:</span>
+                        <span>AED {total}</span>
+                      </div>
+                    </div>
+                  </>
+                )}
+                {discount === 0 && (
+                  <div className="border-t pt-2">
+                    <div className="flex justify-between font-bold text-lg">
+                      <span>Total:</span>
+                      <span>AED {total}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              {discount > 0 && (
+                <div className="flex items-center space-x-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
+                  <span>
+                    Great! You're saving AED {discountAmount} with your sibling
+                    discount.
+                  </span>
+                </div>
+              )}
             </div>
 
             <div className="flex justify-end gap-4">

@@ -80,7 +80,7 @@ To build for production: `pnpm run build`
 
 ## Contact Integration
 The website includes UAE-specific contact information:
-- Phone: +971 50 123 4567
+- Phone: +971 50 333 1468
 - Email: info@sportscamp-uae.com
 - Location: Dubai Sports City, UAE
 
