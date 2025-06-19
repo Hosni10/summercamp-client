@@ -150,33 +150,22 @@ const campActivities = {
   sports: [
     "Football",
     "Basketball",
-    "Swimming",
-    "Athletics",
+    "Martial Arts",
+    "Dodgeball",
+    "Handball",
+    "Baseball",
     "Tennis",
-    "Volleyball",
+    "Padel",
+    "Badminton",
+    "Track & Field",
+    "Olympic Challenges",
+    "Cycling",
+    "Art",
+    "Board Games & more",
   ],
-  cognitive: [
-    "Arts & Crafts",
-    "Science Experiments",
-    "Reading & Writing",
-    "Math Games",
-    "Puzzle Solving",
-    "Creative Workshops",
-  ],
-  competitions: [
-    "Sports Tournaments",
-    "Art Competitions",
-    "Talent Shows",
-    "Quiz Contests",
-    "Team Challenges",
-  ],
-  skills: [
-    "Leadership Development",
-    "Team Building",
-    "Communication Skills",
-    "Problem Solving",
-    "Creativity Enhancement",
-  ],
+  cognitive: [],
+  competitions: [],
+  skills: [],
   ageGroups: [
     "Ages 4-6: Early Development",
     "Ages 7-9: Skill Building",
@@ -371,14 +360,6 @@ function KidsCamp() {
                   </div>
                 ))}
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                {campActivities.cognitive.map((activity, index) => (
-                  <div key={index} className="flex items-start space-x-2">
-                    <Check className="h-5 w-5 text-[#ed3227] mt-1" />
-                    <span>{activity}</span>
-                  </div>
-                ))}
-              </div>
             </div>
           </div>
         </div>
@@ -404,19 +385,19 @@ function KidsCamp() {
               <ul className="space-y-4">
                 <li className="flex items-start space-x-2">
                   <Check className="h-5 w-5 text-[#ed3227] mt-1" />
-                  <span>Over 500 happy campers</span>
+                  <span>
+                    Over 4000 happy kids attended across different days
+                  </span>
                 </li>
                 <li className="flex items-start space-x-2">
                   <Check className="h-5 w-5 text-[#ed3227] mt-1" />
-                  <span>Multiple sports competitions won</span>
+                  <span>Rated as 1 of Abu Dhabi's top summer camps</span>
                 </li>
                 <li className="flex items-start space-x-2">
                   <Check className="h-5 w-5 text-[#ed3227] mt-1" />
-                  <span>98% parent satisfaction rate</span>
-                </li>
-                <li className="flex items-start space-x-2">
-                  <Check className="h-5 w-5 text-[#ed3227] mt-1" />
-                  <span>Professional development for young athletes</span>
+                  <span>
+                    High satisfaction and glowing feedback from parents
+                  </span>
                 </li>
               </ul>
             </div>
