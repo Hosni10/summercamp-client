@@ -28,7 +28,7 @@ const campPlans = {
     {
       name: "3-Days Access",
       description: "Great for a short camp experience",
-      price: "600",
+      price: "650",
       features: [
         "All 1-day features",
         "Extended skill development",
@@ -38,7 +38,7 @@ const campPlans = {
     {
       name: "5-Days Access",
       description: "Complete summer camp experience",
-      price: "800",
+      price: "850",
       features: [
         "All 3-day features",
         "Full week activities",
@@ -49,7 +49,7 @@ const campPlans = {
     {
       name: "10-Days Access",
       description: "Extended camp experience",
-      price: "1500",
+      price: "1,600",
       features: [
         "All 5-day features",
         "Advanced activities",
@@ -60,7 +60,7 @@ const campPlans = {
     {
       name: "20-Days Access",
       description: "Full summer camp experience",
-      price: "2800",
+      price: "3,000",
       features: [
         "All 10-day features",
         "Complete summer program",
@@ -71,70 +71,7 @@ const campPlans = {
     {
       name: "Full Camp Access",
       description: "Unlimited access to all camp days and activities",
-      price: "3500",
-      features: [
-        "All 20-day features",
-        "Unlimited access",
-        "Personalized coaching",
-        "Exclusive events",
-      ],
-      popular: false,
-    },
-  ],
-  alAin: [
-    {
-      name: "1-Day Access",
-      description: "Perfect for trying out our summer camp",
-      price: "150",
-      features: ["Full day camp activities", "Professional supervision"],
-    },
-    {
-      name: "3-Days Access",
-      description: "Great for a short camp experience",
-      price: "350",
-      features: [
-        "All 1-day features",
-        "Extended skill development",
-        "Progress tracking",
-      ],
-    },
-    {
-      name: "5-Days Access",
-      description: "Complete summer camp experience",
-      price: "550",
-      features: [
-        "All 3-day features",
-        "Full week activities",
-        "Individual attention",
-      ],
-    },
-    {
-      name: "10-Days Access",
-      description: "Extended camp experience",
-      price: "1100",
-      features: [
-        "All 5-day features",
-        "Advanced activities",
-        "Special workshops",
-        "Extended care options",
-      ],
-    },
-    {
-      name: "20-Days Access",
-      description: "Full summer camp experience",
-      price: "2200",
-      features: [
-        "All 10-day features",
-        "Complete summer program",
-        "Priority registration",
-        "Exclusive activities",
-      ],
-      popular: true,
-    },
-    {
-      name: "Full Camp Access",
-      description: "Unlimited access to all camp days and activities",
-      price: "2700",
+      price: "5,700",
       features: [
         "All 20-day features",
         "Unlimited access",
@@ -226,7 +163,7 @@ function KidsCamp() {
   };
 
   const getLocationName = (location) => {
-    return location === "abuDhabi" ? "Abu Dhabi" : "Al Ain";
+    return "Abu Dhabi";
   };
 
   return (
@@ -422,7 +359,7 @@ function KidsCamp() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Choose Your Plan
+              Choose Your Membership
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Select the perfect plan for your child's summer camp experience
@@ -442,17 +379,6 @@ function KidsCamp() {
               >
                 <MapPin className="h-4 w-4 inline mr-2" />
                 Abu Dhabi
-              </button>
-              <button
-                className={`px-6 py-3 rounded-md font-medium transition-colors ${
-                  selectedLocation === "alAin"
-                    ? "bg-[#ed3227] text-white"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-                onClick={() => setSelectedLocation("alAin")}
-              >
-                <MapPin className="h-4 w-4 inline mr-2" />
-                Al Ain
               </button>
             </div>
           </div>
@@ -514,19 +440,19 @@ function KidsCamp() {
                   <div className="flex items-center justify-center space-x-2">
                     <Users className="h-5 w-5 text-[#ed3227]" />
                     <span>
-                      <strong>1 Sibling:</strong> 10% off
+                      <strong>2 Siblings:</strong> 10% off
                     </span>
                   </div>
                   <div className="flex items-center justify-center space-x-2">
                     <Users className="h-5 w-5 text-[#ed3227]" />
                     <span>
-                      <strong>2 Siblings:</strong> 15% off
+                      <strong>3 Siblings:</strong> 15% off
                     </span>
                   </div>
                   <div className="flex items-center justify-center space-x-2">
                     <Users className="h-5 w-5 text-[#ed3227]" />
                     <span>
-                      <strong>3+ Siblings:</strong> 20% off
+                      <strong>4+ Siblings:</strong> 20% off
                     </span>
                   </div>
                 </div>

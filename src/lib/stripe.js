@@ -22,11 +22,6 @@ export const formatCurrency = (amount, currency = "AED") => {
   }).format(amount);
 };
 
-// Utility function to convert AED to cents for Stripe
-export const convertToCents = (amount) => {
-  return Math.round(amount * 100);
-};
-
 // Create PaymentIntent by calling the backend
 export const createPaymentIntent = async (amount, currency = "aed") => {
   try {
@@ -39,7 +34,7 @@ export const createPaymentIntent = async (amount, currency = "aed") => {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          amount,
+          amount: Math.round(Number(amount)),
           currency,
         }),
       }

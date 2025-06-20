@@ -48,12 +48,12 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
     if (num === 3) return 15;
     return 20;
   };
-  const basePrice = parseInt(selectedPlan.price);
-  const numChildren = parseInt(formData.numberOfChildren);
+  const basePrice = parseInt(selectedPlan.price) || 0;
+  const numChildren = parseInt(formData.numberOfChildren) || 1;
   const discount = calculateDiscount(numChildren);
   const subtotal = basePrice * numChildren;
   const discountAmount = (subtotal * discount) / 100;
-  const total = subtotal - discountAmount;
+  const total = Math.round((subtotal - discountAmount) * 100) / 100;
 
   const validateForm = () => {
     const newErrors = {};
@@ -72,9 +72,12 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
     // Email validation
     if (
       formData.parentEmail &&
-      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.parentEmail)
+      !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(
+        formData.parentEmail
+      )
     ) {
-      newErrors.parentEmail = "Please enter a valid email address";
+      newErrors.parentEmail =
+        "Please enter a valid email address (e.g. john@email.com)";
     }
     // Phone validation (UAE format)
     if (
@@ -174,64 +177,52 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
     };
   };
 
-  const sendConfirmationEmail = async (bookingData) => {
+  const sendConfirmationEmail = async (bookingData, paymentId) => {
     const accessPeriod = calculateAccessPeriod(
       bookingData.startDate,
       selectedPlan.name
     );
-
+    const ticketNumber =
+      paymentId ||
+      `TICKET-${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
+    const childNames = bookingData.children.map((c) => c.name).join(", ");
+    const htmlTicket = `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; border: 2px solid #ed3227; border-radius: 16px; overflow: hidden;">
+        <div style="background: #ed3227; color: #fff; padding: 24px 0; text-align: center;">
+          <h2 style="margin: 0; font-size: 2rem; letter-spacing: 2px;">Summer Camp Ticket</h2>
+          <div style="font-size: 1.1rem; margin-top: 8px;">Thank you for your booking!</div>
+        </div>
+        <div style="padding: 24px; background: #fff;">
+          <p style="margin: 0 0 16px 0; font-size: 1.1rem;">Hello <strong>${
+            bookingData.parentName
+          }</strong>,</p>
+          <div style="border: 1px dashed #ed3227; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+            <div style="font-size: 1.1rem; margin-bottom: 8px;"><strong>Ticket Number:</strong> <span style="color: #ed3227;">${ticketNumber}</span></div>
+            <div><strong>Plan:</strong> ${selectedPlan.name}</div>
+            <div><strong>Location:</strong> ${
+              selectedLocation === "abuDhabi" ? "Abu Dhabi" : "Al Ain"
+            }</div>
+            <div><strong>Child(ren):</strong> ${childNames}</div>
+            <div><strong>Access Period:</strong> ${accessPeriod.days} days (${
+      accessPeriod.start
+    } to ${accessPeriod.end})</div>
+            <div><strong>Start Date:</strong> ${bookingData.startDate}</div>
+            <div><strong>Total Paid:</strong> AED ${
+              bookingData.pricing.total
+            }</div>
+          </div>
+          <div style="font-size: 1rem; color: #333; margin-bottom: 12px;">Please present this ticket (printed or on your phone) at the camp entrance.</div>
+          <div style="font-size: 0.95rem; color: #888;">If you have any questions, contact us at <a href="mailto:info@atomicsfootball.com" style="color: #ed3227;">info@atomicsfootball.com</a>.</div>
+        </div>
+        <div style="background: #ed3227; color: #fff; text-align: center; padding: 12px 0; font-size: 0.95rem;">Atomics Football Club &copy; 2024</div>
+      </div>
+    `;
     const emailContent = {
       to: bookingData.parentEmail,
-      subject: `Summer Camp Booking Confirmation - ${selectedPlan.name}`,
-      text: `
-Dear ${bookingData.parentName},
-
-Thank you for booking the ${selectedPlan.name} for your child ${
-        bookingData.children[0].name
-      }.
-
-Booking Details:
-- Plan: ${selectedPlan.name}
-- Location: ${selectedLocation === "abuDhabi" ? "Abu Dhabi" : "Al Ain"}
-- Access Period: ${accessPeriod.days} days (${accessPeriod.start} to ${
-        accessPeriod.end
-      })
-- Price: AED ${selectedPlan.price}
-
-${
-  selectedLocation === "abuDhabi"
-    ? "Your booking includes access to both Kids Camp and Football Clinic."
-    : "Your booking includes access to Kids Camp."
-}
-
-Kids Camp Schedule:
-- Abu Dhabi: Monday to Friday, 8:30 AM - 2 PM
-- Al Ain: Monday to Thursday, 8:30 AM - 2 PM
-
-${
-  selectedLocation === "abuDhabi"
-    ? `
-Football Clinic Schedule (Abu Dhabi only):
-- U17 & U18: 3:00 PM - 5:00 PM
-- U6, U8 & U10: 5:00 PM - 6:15 PM
-- U12 & U13: 6:15 PM - 7:40 PM
-- U14 & U15: 7:30 PM - 9:00 PM
-`
-    : ""
-}
-
-Please ensure your child arrives 15 minutes before the scheduled time.
-
-If you have any questions, please don't hesitate to contact us.
-
-Best regards,
-Summer Camp Team
-      `,
+      subject: `Your Summer Camp Ticket - ${selectedPlan.name}`,
+      html: htmlTicket,
     };
-
     try {
-      // Here you would integrate with your email service
-      // For example, using a backend API endpoint
       const response = await fetch("/api/send-email", {
         method: "POST",
         headers: {
@@ -239,19 +230,27 @@ Summer Camp Team
         },
         body: JSON.stringify(emailContent),
       });
-
       if (!response.ok) {
         throw new Error("Failed to send confirmation email");
       }
     } catch (error) {
       console.error("Error sending confirmation email:", error);
-      // You might want to show a notification to the user
-      // but still proceed with the booking
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Debug logging for payment calculation
+    console.log("BookingForm Payment Debug:", {
+      basePrice,
+      numChildren,
+      discount,
+      subtotal,
+      discountAmount,
+      total,
+      selectedPlan,
+      formData,
+    });
     if (validateForm()) {
       const bookingData = {
         ...formData,

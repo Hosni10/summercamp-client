@@ -6,6 +6,7 @@ import { MapPin, Phone, Mail } from "lucide-react";
 import afcLogo from "./assets/AFC-Logo.svg";
 import KidsCamp from "./pages/KidsCamp.jsx";
 import FootballClinic from "./pages/FootballClinic.jsx";
+import ParentConsentForm from "./pages/ParentConsentForm.jsx";
 import "./App.css";
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
             <Route path="/" element={<KidsCamp />} />
             <Route path="/kids-camp" element={<KidsCamp />} />
             <Route path="/football-clinic" element={<FootballClinic />} />
+            <Route path="/parent-consent" element={<ParentConsentForm />} />
           </Routes>
         </main>
 
