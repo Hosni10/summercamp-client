@@ -244,6 +244,15 @@ function KidsCamp() {
                     </p>
                   </div>
                 </div>
+                <div className="flex items-start space-x-3">
+                  <Users className="h-6 w-6 text-[#ed3227] mt-1" />
+                  <div>
+                    <h3 className="font-semibold">Girls Group Available</h3>
+                    <p className="text-gray-600">
+                      Dedicated girls-only groups for comfortable participation
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
             <div

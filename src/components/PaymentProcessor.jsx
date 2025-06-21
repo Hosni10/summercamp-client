@@ -61,8 +61,8 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
   useEffect(() => {
     const initializePayment = async () => {
       try {
-        // Use discounted total if available, otherwise fallback to plan price
-        let amount = bookingData?.pricing?.total ?? bookingData.plan.price;
+        // Use final total with tax if available, otherwise fallback to plan price
+        let amount = bookingData?.pricing?.finalTotal ?? bookingData.plan.price;
         amount = Number(amount);
         if (isNaN(amount) || amount <= 0)
           throw new Error("Invalid payment amount");
@@ -75,7 +75,7 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
       }
     };
     initializePayment();
-  }, [bookingData?.pricing?.total, bookingData.plan.price]);
+  }, [bookingData?.pricing?.finalTotal, bookingData.plan.price]);
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -155,7 +155,7 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
         <div className="flex justify-between items-center mt-2">
           <span className="font-medium">Amount to Pay:</span>
           <Badge className="bg-blue-600 text-white text-lg">
-            AED {bookingData?.pricing?.total ?? bookingData.plan.price}
+            AED {bookingData?.pricing?.finalTotal ?? bookingData.plan.price}
           </Badge>
         </div>
 
@@ -213,7 +213,9 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
               Processing...
             </div>
           ) : (
-            `Pay AED ${bookingData?.pricing?.total ?? bookingData.plan.price}`
+            `Pay AED ${
+              bookingData?.pricing?.finalTotal ?? bookingData.plan.price
+            }`
           )}
         </Button>
       </div>
@@ -307,7 +309,7 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
               <p>
                 <strong>Amount:</strong>{" "}
                 {formatCurrency(
-                  bookingData?.pricing?.total ?? bookingData.plan.price
+                  bookingData?.pricing?.finalTotal ?? bookingData.plan.price
                 )}
               </p>
             </div>
@@ -387,7 +389,7 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
                 <span className="font-semibold">Total:</span>
                 <Badge variant="secondary" className="bg-blue-600 text-white">
                   {formatCurrency(
-                    bookingData.pricing?.total ?? bookingData.plan.price
+                    bookingData.pricing?.finalTotal ?? bookingData.plan.price
                   )}
                 </Badge>
               </div>

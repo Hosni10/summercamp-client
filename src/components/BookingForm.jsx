@@ -27,10 +27,12 @@ import {
   isThursday,
   isFriday,
 } from "date-fns";
+import axios from "axios";
 
 const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
-    parentName: "",
+    firstName: "",
+    lastName: "",
     parentEmail: "",
     parentPhone: "",
     parentAddress: "",
@@ -41,24 +43,41 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
 
   const [errors, setErrors] = useState({});
 
-  // Sibling discount logic
-  const calculateDiscount = (num) => {
-    if (num === 1) return 0;
-    if (num === 2) return 10;
-    if (num === 3) return 15;
-    return 20;
+  // Sibling discount logic - apply to individual children
+  const calculateChildPrice = (childIndex) => {
+    const basePrice = parseInt(selectedPlan.price.replace(/,/g, "")) || 0;
+    if (childIndex === 0) return basePrice; // First child pays full price
+
+    // Calculate discount for each child based on position
+    const discountPercentage = Math.min(10 + (childIndex - 1) * 5, 20); // 2nd child: 10%, 3rd: 15%, 4th: 20%, 5th+: 20%
+    const discountAmount = (basePrice * discountPercentage) / 100;
+    return Math.round((basePrice - discountAmount) * 100) / 100;
   };
-  const basePrice = parseInt(selectedPlan.price) || 0;
+
+  const basePrice = parseInt(selectedPlan.price.replace(/,/g, "")) || 0;
   const numChildren = parseInt(formData.numberOfChildren) || 1;
-  const discount = calculateDiscount(numChildren);
-  const subtotal = basePrice * numChildren;
-  const discountAmount = (subtotal * discount) / 100;
-  const total = Math.round((subtotal - discountAmount) * 100) / 100;
+
+  // Calculate individual child prices
+  const childPrices = [];
+  let totalAmount = 0;
+  for (let i = 0; i < numChildren; i++) {
+    const childPrice = calculateChildPrice(i);
+    childPrices.push(childPrice);
+    totalAmount += childPrice;
+  }
+
+  const originalTotal = basePrice * numChildren;
+  const totalDiscount = originalTotal - totalAmount;
+
+  // Add 5% tax to the discounted total
+  const taxAmount = Math.round(totalAmount * 0.05 * 100) / 100;
+  const finalTotal = totalAmount + taxAmount;
 
   const validateForm = () => {
     const newErrors = {};
     const requiredFields = [
-      "parentName",
+      "firstName",
+      "lastName",
       "parentEmail",
       "parentPhone",
       "parentAddress",
@@ -194,7 +213,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
         </div>
         <div style="padding: 24px; background: #fff;">
           <p style="margin: 0 0 16px 0; font-size: 1.1rem;">Hello <strong>${
-            bookingData.parentName
+            bookingData.firstName + " " + bookingData.lastName
           }</strong>,</p>
           <div style="border: 1px dashed #ed3227; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
             <div style="font-size: 1.1rem; margin-bottom: 8px;"><strong>Ticket Number:</strong> <span style="color: #ed3227;">${ticketNumber}</span></div>
@@ -208,7 +227,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
     } to ${accessPeriod.end})</div>
             <div><strong>Start Date:</strong> ${bookingData.startDate}</div>
             <div><strong>Total Paid:</strong> AED ${
-              bookingData.pricing.total
+              bookingData.pricing.finalTotal
             }</div>
           </div>
           <div style="font-size: 1rem; color: #333; margin-bottom: 12px;">Please present this ticket (printed or on your phone) at the camp entrance.</div>
@@ -223,14 +242,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
       html: htmlTicket,
     };
     try {
-      const response = await fetch("/api/send-email", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(emailContent),
-      });
-      if (!response.ok) {
+      const response = await axios.post("/api/send-email", emailContent);
+      if (response.status !== 200) {
         throw new Error("Failed to send confirmation email");
       }
     } catch (error) {
@@ -244,29 +257,63 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
     console.log("BookingForm Payment Debug:", {
       basePrice,
       numChildren,
-      discount,
-      subtotal,
-      discountAmount,
-      total,
+      childPrices,
+      totalAmount,
+      totalDiscount,
       selectedPlan,
       formData,
     });
     if (validateForm()) {
+      // Ensure children data is properly formatted
+      const formattedChildren = formData.children.map((child) => ({
+        name: child.name,
+        age: parseInt(child.age),
+        gender: child.gender,
+      }));
+
       const bookingData = {
-        ...formData,
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        parentEmail: formData.parentEmail,
+        parentPhone: formData.parentPhone,
+        parentAddress: formData.parentAddress,
+        numberOfChildren: formData.numberOfChildren,
+        children: formattedChildren,
+        startDate: formData.startDate,
         plan: selectedPlan,
         location: selectedLocation,
         pricing: {
-          basePrice,
-          numChildren,
-          discount,
-          subtotal,
-          discountAmount,
-          total,
+          finalTotal: finalTotal,
         },
       };
-      await sendConfirmationEmail(bookingData);
-      onSubmit(bookingData);
+
+      try {
+        // Save booking to database
+        console.log("Sending booking data:", bookingData);
+        const response = await axios.post("/api/bookings", bookingData);
+
+        if (response.status !== 201) {
+          throw new Error("Failed to save booking");
+        }
+
+        const result = response.data;
+        console.log("Booking saved successfully:", result.bookingId);
+
+        // Add the booking ID to the booking data
+        bookingData.bookingId = result.bookingId;
+
+        await sendConfirmationEmail(bookingData);
+        onSubmit(bookingData);
+      } catch (error) {
+        console.error("Error saving booking:", error);
+        console.error("Error response:", error.response?.data);
+        console.error("Error status:", error.response?.status);
+        alert(
+          `Failed to save booking: ${
+            error.response?.data?.message || error.message
+          }`
+        );
+      }
     }
   };
 
@@ -279,7 +326,12 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
               <h2 className="text-2xl font-bold">Book Your Camp</h2>
               <p className="text-gray-600 mt-1">
                 {selectedLocation === "abuDhabi"
-                  ? "Abu Dhabi - Full day access to Kids Camp and Football Clinic"
+                  ? selectedPlan?.name?.toLowerCase().includes("football") ||
+                    selectedPlan?.description
+                      ?.toLowerCase()
+                      .includes("football")
+                    ? "Abu Dhabi - Full day access to Football Clinic"
+                    : "Abu Dhabi - Full day access to Kids Camp"
                   : "Al Ain - Kids Camp (8:30 AM - 2 PM)"}
               </p>
             </div>
@@ -295,15 +347,27 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
                 <h3 className="font-semibold text-lg">{selectedPlan?.name}</h3>
                 <p className="text-gray-600">
                   {selectedLocation === "abuDhabi"
-                    ? "Full day access to Kids Camp and Football Clinic"
+                    ? selectedPlan?.name?.toLowerCase().includes("football") ||
+                      selectedPlan?.description
+                        ?.toLowerCase()
+                        .includes("football")
+                      ? "Full day access to Football Clinic"
+                      : "Full day access to Kids Camp"
                     : "Kids Camp (8:30 AM - 2 PM)"}
                   {" - "}
                   {selectedLocation === "abuDhabi" ? "Abu Dhabi" : "Al Ain"}
                 </p>
               </div>
-              <Badge className="bg-blue-600 text-white">
-                AED {selectedPlan?.price}
-              </Badge>
+              <div className="text-right">
+                <Badge className="bg-blue-600 text-white">
+                  AED {finalTotal}
+                </Badge>
+                {totalDiscount > 0 && (
+                  <div className="text-xs text-green-600 mt-1">
+                    Save AED {totalDiscount}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
@@ -313,17 +377,33 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
               <h3 className="text-lg font-semibold mb-4">Parent Information</h3>
               <div className="grid gap-4">
                 <div>
-                  <Label htmlFor="parentName">Full Name</Label>
+                  <Label htmlFor="firstName">First Name</Label>
                   <Input
-                    id="parentName"
-                    value={formData.parentName}
+                    id="firstName"
+                    value={formData.firstName}
                     onChange={(e) =>
-                      setFormData({ ...formData, parentName: e.target.value })
+                      setFormData({ ...formData, firstName: e.target.value })
                     }
                   />
-                  {errors.parentName && (
+                  {errors.firstName && (
                     <p className="text-red-500 text-sm mt-1">
-                      {errors.parentName}
+                      {errors.firstName}
+                    </p>
+                  )}
+                </div>
+
+                <div>
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    value={formData.lastName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, lastName: e.target.value })
+                    }
+                  />
+                  {errors.lastName && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {errors.lastName}
                     </p>
                   )}
                 </div>
@@ -507,46 +587,37 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Pricing Summary</h3>
               <div className="bg-gray-50 p-4 rounded-lg space-y-2">
-                <div className="flex justify-between">
-                  <span>Base Price per Child:</span>
-                  <span>AED {basePrice}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Number of Children:</span>
-                  <span>{numChildren}</span>
-                </div>
+                {formData.children.map((child, idx) => (
+                  <div key={idx} className="flex justify-between">
+                    <span>Child {idx + 1}:</span>
+                    <span>AED {childPrices[idx]}</span>
+                  </div>
+                ))}
                 <div className="flex justify-between">
                   <span>Subtotal:</span>
-                  <span>AED {subtotal}</span>
+                  <span>AED {totalAmount}</span>
                 </div>
-                {discount > 0 && (
-                  <>
-                    <div className="flex justify-between text-green-600">
-                      <span>Sibling Discount ({discount}%):</span>
-                      <span>-AED {discountAmount}</span>
-                    </div>
-                    <div className="border-t pt-2">
-                      <div className="flex justify-between font-bold text-lg">
-                        <span>Total:</span>
-                        <span>AED {total}</span>
-                      </div>
-                    </div>
-                  </>
-                )}
-                {discount === 0 && (
-                  <div className="border-t pt-2">
-                    <div className="flex justify-between font-bold text-lg">
-                      <span>Total:</span>
-                      <span>AED {total}</span>
-                    </div>
+                {totalDiscount > 0 && (
+                  <div className="flex justify-between text-green-600">
+                    <span>Total Discount:</span>
+                    <span>-AED {totalDiscount}</span>
                   </div>
                 )}
+                <div className="flex justify-between">
+                  <span>Tax (5%):</span>
+                  <span>AED {taxAmount}</span>
+                </div>
+                <div className="border-t pt-2">
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Total:</span>
+                    <span>AED {finalTotal}</span>
+                  </div>
+                </div>
               </div>
-              {discount > 0 && (
+              {totalDiscount > 0 && (
                 <div className="flex items-center space-x-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
                   <span>
-                    Great! You're saving AED {discountAmount} with your sibling
-                    discount.
+                    Great! You're saving AED {totalDiscount} with your discount.
                   </span>
                 </div>
               )}
