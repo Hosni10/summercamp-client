@@ -1,23 +1,17 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button.jsx";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card.jsx";
-import { Input } from "@/components/ui/input.jsx";
-import { Label } from "@/components/ui/label.jsx";
+import { useNavigate } from "react-router-dom";
+import { Button } from "./ui/button.jsx";
+import { Input } from "./ui/input.jsx";
+import { Label } from "./ui/label.jsx";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select.jsx";
-import { Textarea } from "@/components/ui/textarea.jsx";
-import { Badge } from "@/components/ui/badge.jsx";
+} from "./ui/select.jsx";
+import { Textarea } from "./ui/textarea.jsx";
+import { Badge } from "./ui/badge.jsx";
 import { X, Calendar, User, Phone, Mail, MapPin } from "lucide-react";
 import {
   format,
@@ -28,8 +22,11 @@ import {
   isFriday,
 } from "date-fns";
 import axios from "axios";
+import PaymentProcessor from "./PaymentProcessor.jsx";
+import { toast, Toaster } from "sonner";
 
-const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
+const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -42,6 +39,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
   });
 
   const [errors, setErrors] = useState({});
+  const [showPayment, setShowPayment] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Sibling discount logic - apply to individual children
   const calculateChildPrice = (childIndex) => {
@@ -196,61 +195,6 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
     };
   };
 
-  const sendConfirmationEmail = async (bookingData, paymentId) => {
-    const accessPeriod = calculateAccessPeriod(
-      bookingData.startDate,
-      selectedPlan.name
-    );
-    const ticketNumber =
-      paymentId ||
-      `TICKET-${Math.random().toString(36).substr(2, 8).toUpperCase()}`;
-    const childNames = bookingData.children.map((c) => c.name).join(", ");
-    const htmlTicket = `
-      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; border: 2px solid #ed3227; border-radius: 16px; overflow: hidden;">
-        <div style="background: #ed3227; color: #fff; padding: 24px 0; text-align: center;">
-          <h2 style="margin: 0; font-size: 2rem; letter-spacing: 2px;">Summer Camp Ticket</h2>
-          <div style="font-size: 1.1rem; margin-top: 8px;">Thank you for your booking!</div>
-        </div>
-        <div style="padding: 24px; background: #fff;">
-          <p style="margin: 0 0 16px 0; font-size: 1.1rem;">Hello <strong>${
-            bookingData.firstName + " " + bookingData.lastName
-          }</strong>,</p>
-          <div style="border: 1px dashed #ed3227; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
-            <div style="font-size: 1.1rem; margin-bottom: 8px;"><strong>Ticket Number:</strong> <span style="color: #ed3227;">${ticketNumber}</span></div>
-            <div><strong>Plan:</strong> ${selectedPlan.name}</div>
-            <div><strong>Location:</strong> ${
-              selectedLocation === "abuDhabi" ? "Abu Dhabi" : "Al Ain"
-            }</div>
-            <div><strong>Child(ren):</strong> ${childNames}</div>
-            <div><strong>Access Period:</strong> ${accessPeriod.days} days (${
-      accessPeriod.start
-    } to ${accessPeriod.end})</div>
-            <div><strong>Start Date:</strong> ${bookingData.startDate}</div>
-            <div><strong>Total Paid:</strong> AED ${
-              bookingData.pricing.finalTotal
-            }</div>
-          </div>
-          <div style="font-size: 1rem; color: #333; margin-bottom: 12px;">Please present this ticket (printed or on your phone) at the camp entrance.</div>
-          <div style="font-size: 0.95rem; color: #888;">If you have any questions, contact us at <a href="mailto:info@atomicsfootball.com" style="color: #ed3227;">info@atomicsfootball.com</a>.</div>
-        </div>
-        <div style="background: #ed3227; color: #fff; text-align: center; padding: 12px 0; font-size: 0.95rem;">Atomics Football Club &copy; 2024</div>
-      </div>
-    `;
-    const emailContent = {
-      to: bookingData.parentEmail,
-      subject: `Your Summer Camp Ticket - ${selectedPlan.name}`,
-      html: htmlTicket,
-    };
-    try {
-      const response = await axios.post("/api/send-email", emailContent);
-      if (response.status !== 200) {
-        throw new Error("Failed to send confirmation email");
-      }
-    } catch (error) {
-      console.error("Error sending confirmation email:", error);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     // Debug logging for payment calculation
@@ -302,8 +246,9 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
         // Add the booking ID to the booking data
         bookingData.bookingId = result.bookingId;
 
-        await sendConfirmationEmail(bookingData);
-        onSubmit(bookingData);
+        // Don't call onSubmit here as it closes the modal
+        // onSubmit(bookingData);
+        setShowPayment(true);
       } catch (error) {
         console.error("Error saving booking:", error);
         console.error("Error response:", error.response?.data);
@@ -316,6 +261,106 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose, onSubmit }) => {
       }
     }
   };
+
+  const handlePaymentSuccess = async (paymentResult) => {
+    console.log("🎉 handlePaymentSuccess in BookingForm called!");
+    console.log("Payment result:", paymentResult);
+    setIsSubmitting(true);
+    toast.success("Payment successful! Saving your booking...");
+
+    const bookingPayload = {
+      ...formData,
+      plan: selectedPlan,
+      location: selectedLocation,
+      pricing: {
+        originalTotal,
+        totalDiscount,
+        taxAmount,
+        finalTotal,
+      },
+      paymentId: paymentResult.paymentId,
+    };
+
+    try {
+      console.log("Payment successful, saving booking...");
+      const response = await fetch("http://localhost:5000/api/bookings", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(bookingPayload),
+      });
+
+      const savedBookingResult = await response.json();
+
+      if (!savedBookingResult.success) {
+        throw new Error(
+          savedBookingResult.message || "Failed to save booking."
+        );
+      }
+
+      console.log("Booking saved successfully:", savedBookingResult.booking);
+      toast.info("Redirecting to consent form...");
+
+      console.log(
+        "About to navigate to /parent-consent with booking data:",
+        savedBookingResult.booking
+      );
+
+      // Close the payment modal first
+      setShowPayment(false);
+
+      // Navigate immediately without setTimeout
+      try {
+        navigate("/parent-consent", {
+          state: { booking: savedBookingResult.booking },
+        });
+        console.log("Navigation initiated successfully");
+      } catch (navError) {
+        console.error("Navigation failed:", navError);
+        // Fallback: use window.location
+        window.location.href = `/parent-consent?booking=${savedBookingResult.booking._id}`;
+      }
+    } catch (error) {
+      console.error("Error saving booking after payment:", error);
+      toast.error(
+        `Your payment was successful, but we failed to save your booking. Please contact support. Error: ${error.message}`
+      );
+      setIsSubmitting(false);
+    }
+  };
+
+  const handlePaymentError = (error) => {
+    toast.error(`Payment failed: ${error.message}`);
+    setIsSubmitting(false);
+    setShowPayment(false);
+  };
+
+  const fullBookingData = {
+    ...formData,
+    plan: selectedPlan,
+    location: selectedLocation,
+    pricing: {
+      originalTotal,
+      totalDiscount,
+      taxAmount,
+      finalTotal,
+    },
+  };
+
+  if (showPayment) {
+    return (
+      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <PaymentProcessor
+          bookingData={fullBookingData}
+          onSuccess={handlePaymentSuccess}
+          onError={handlePaymentError}
+          onCancel={() => {
+            setShowPayment(false);
+            setIsSubmitting(false);
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">

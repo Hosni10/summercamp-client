@@ -1,13 +1,13 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button.jsx";
+import { Button } from "../components/ui/button.jsx";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.jsx";
-import { Badge } from "@/components/ui/badge.jsx";
+} from "../components/ui/card.jsx";
+import { Badge } from "../components/ui/badge.jsx";
 import {
   Star,
   Users,
@@ -16,12 +16,13 @@ import {
   Trophy,
   Target,
   Clock,
+  MapPin,
+  X,
 } from "lucide-react";
 import footballClinicImage from "../assets/football-clinic.jpeg";
 import coachImage from "../assets/coach.jpeg";
 import backgroundImage from "../assets/background.jpeg";
 import BookingForm from "../components/BookingForm.jsx";
-import PaymentProcessor from "../components/PaymentProcessor.jsx";
 
 const clinicPlans = {
   abuDhabi: [
@@ -119,8 +120,6 @@ function ImageModal({ src, alt, open, onClose }) {
 function FootballClinic() {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [showPayment, setShowPayment] = useState(false);
-  const [bookingData, setBookingData] = useState(null);
   const [modalImg, setModalImg] = useState(null);
 
   const handlePlanSelect = (plan) => {
@@ -129,21 +128,9 @@ function FootballClinic() {
   };
 
   const handleBookingSubmit = (data) => {
-    setBookingData(data);
+    console.log("Booking submitted:", data);
     setShowBookingForm(false);
-    setShowPayment(true);
-  };
-
-  const handlePaymentSuccess = () => {
-    setShowPayment(false);
-    setBookingData(null);
-    setSelectedPlan(null);
-    // You can add success notification here
-  };
-
-  const handlePaymentError = () => {
-    setShowPayment(false);
-    // You can add error notification here
+    // The BookingForm handles everything internally now
   };
 
   return (
@@ -345,17 +332,6 @@ function FootballClinic() {
           selectedPlan={selectedPlan}
           selectedLocation="abuDhabi"
           onClose={() => setShowBookingForm(false)}
-          onSubmit={handleBookingSubmit}
-        />
-      )}
-
-      {/* Payment Processor Modal */}
-      {showPayment && bookingData && (
-        <PaymentProcessor
-          bookingData={bookingData}
-          onSuccess={handlePaymentSuccess}
-          onError={handlePaymentError}
-          onCancel={() => setShowPayment(false)}
         />
       )}
 

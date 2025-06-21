@@ -1,7 +1,7 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
-import { Button } from "@/components/ui/button.jsx";
-import { Badge } from "@/components/ui/badge.jsx";
+import { Button } from "./components/ui/button.jsx";
+import { Badge } from "./components/ui/badge.jsx";
 import { MapPin, Phone, Mail } from "lucide-react";
 import afcLogo from "./assets/AFC-Logo.svg";
 import KidsCamp from "./pages/KidsCamp.jsx";

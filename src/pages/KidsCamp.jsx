@@ -1,21 +1,30 @@
 import React, { useState } from "react";
-import { Button } from "@/components/ui/button.jsx";
+import { Button } from "../components/ui/button.jsx";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.jsx";
-import { Badge } from "@/components/ui/badge.jsx";
-import { Star, Users, Check, Calendar, Trophy, MapPin } from "lucide-react";
-import kidsCampImage from "../assets/kids-camp.jpeg";
+} from "../components/ui/card.jsx";
+import { Badge } from "../components/ui/badge.jsx";
+import {
+  Check,
+  MapPin,
+  Trophy,
+  Users,
+  Star,
+  Clock,
+  Calendar,
+  X,
+} from "lucide-react";
+import heroImage from "../assets/hero-sports-camp.jpg";
 import activitiesImage from "../assets/activities.jpeg";
+import entertainmentImage from "../assets/entertainment.jpeg";
 import detailsImage from "../assets/details.jpeg";
 import lastYearImage from "../assets/last-year.jpeg";
 import fullImage from "../assets/kids-camp.jpeg";
 import BookingForm from "../components/BookingForm.jsx";
-import PaymentProcessor from "../components/PaymentProcessor.jsx";
 
 const campPlans = {
   abuDhabi: [
@@ -137,8 +146,6 @@ function KidsCamp() {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState("abuDhabi");
-  const [showPayment, setShowPayment] = useState(false);
-  const [bookingData, setBookingData] = useState(null);
   const [modalImg, setModalImg] = useState(null);
 
   const handlePlanSelect = (plan) => {
@@ -147,19 +154,9 @@ function KidsCamp() {
   };
 
   const handleBookingSubmit = (data) => {
-    setBookingData(data);
+    console.log("Booking submitted:", data);
     setShowBookingForm(false);
-    setShowPayment(true);
-  };
-
-  const handlePaymentSuccess = () => {
-    setShowPayment(false);
-    setBookingData(null);
-    setSelectedPlan(null);
-  };
-
-  const handlePaymentError = () => {
-    setShowPayment(false);
+    // The BookingForm handles everything internally now
   };
 
   const getLocationName = (location) => {
@@ -477,17 +474,6 @@ function KidsCamp() {
           selectedPlan={selectedPlan}
           selectedLocation={selectedLocation}
           onClose={() => setShowBookingForm(false)}
-          onSubmit={handleBookingSubmit}
-        />
-      )}
-
-      {/* Payment Processor Modal */}
-      {showPayment && bookingData && (
-        <PaymentProcessor
-          bookingData={bookingData}
-          onSuccess={handlePaymentSuccess}
-          onError={handlePaymentError}
-          onCancel={() => setShowPayment(false)}
         />
       )}
 

@@ -10,16 +10,16 @@ import {
   createPaymentIntent,
   formatCurrency,
 } from "../lib/stripe.js";
-import { Button } from "@/components/ui/button.jsx";
+import { Button } from "./ui/button.jsx";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.jsx";
-import { Badge } from "@/components/ui/badge.jsx";
-import { CreditCard, Lock, CheckCircle, AlertCircle, X } from "lucide-react";
+} from "./ui/card.jsx";
+import { Badge } from "./ui/badge.jsx";
+import { CreditCard, Lock, AlertCircle, X } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { format, addDays } from "date-fns";
 
@@ -119,11 +119,14 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
         onError(error);
       } else if (paymentIntent.status === "succeeded") {
         console.log("Payment succeeded:", paymentIntent);
+        console.log("Calling onSuccess from PaymentForm");
+        console.log("onSuccess function:", onSuccess);
         onSuccess({
           paymentId: paymentIntent.id,
           amount: paymentIntent.amount,
           currency: paymentIntent.currency,
         });
+        console.log("onSuccess called from PaymentForm");
       }
     } catch (error) {
       console.error("Unexpected payment error:", error);
@@ -225,9 +228,14 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
 
 // Main Payment Processor Component
 const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
-  const [paymentStatus, setPaymentStatus] = useState("form"); // 'form', 'success', 'error'
-  const [paymentResult, setPaymentResult] = useState(null);
   const [stripePromise, setStripePromise] = useState(null);
+
+  console.log("PaymentProcessor rendered with props:", {
+    hasBookingData: !!bookingData,
+    onSuccessType: typeof onSuccess,
+    onCancelType: typeof onCancel,
+    onErrorType: typeof onError,
+  });
 
   useEffect(() => {
     // Initialize Stripe
@@ -242,15 +250,21 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
   }, []);
 
   const handlePaymentSuccess = (result) => {
-    setPaymentResult(result);
-    setPaymentStatus("success");
-    setTimeout(() => {
+    console.log("🔥 PaymentProcessor handlePaymentSuccess called!");
+    console.log("Payment success in PaymentProcessor:", result);
+    console.log("onSuccess prop type:", typeof onSuccess);
+    console.log("onSuccess prop:", onSuccess);
+    // Just call the parent's onSuccess callback - let the parent handle everything
+    if (typeof onSuccess === "function") {
+      console.log("Calling parent onSuccess callback");
       onSuccess(result);
-    }, 2000);
+    } else {
+      console.error("onSuccess is not a function!");
+    }
   };
 
   const handlePaymentError = (error) => {
-    setPaymentStatus("error");
+    console.log("Payment error in PaymentProcessor:", error);
     onError(error);
   };
 
@@ -288,36 +302,6 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
       description,
     };
   };
-
-  if (paymentStatus === "success") {
-    return (
-      <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-        <Card className="w-full max-w-md">
-          <CardContent className="p-6 text-center">
-            <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-green-600 mb-2">
-              Payment Successful!
-            </h2>
-            <p className="text-gray-600 mb-4">
-              Your booking has been confirmed. You will receive a confirmation
-              email shortly.
-            </p>
-            <div className="space-y-2 text-sm text-gray-500">
-              <p>
-                <strong>Payment ID:</strong> {paymentResult?.paymentId}
-              </p>
-              <p>
-                <strong>Amount:</strong>{" "}
-                {formatCurrency(
-                  bookingData?.pricing?.finalTotal ?? bookingData.plan.price
-                )}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">

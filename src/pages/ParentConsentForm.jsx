@@ -1,6 +1,8 @@
-import React, { useState, useRef } from "react";
-import { Button } from "@/components/ui/button.jsx";
+import React, { useState, useRef, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { Button } from "../components/ui/button.jsx";
 import SignaturePad from "react-signature-canvas";
+import { Toaster, toast } from "sonner";
 
 const initialForm = {
   // Kids Details
@@ -41,7 +43,6 @@ const initialForm = {
   medications: "",
   healthConcerns: "",
   // Declaration
-  playerName: "",
   guardianName: "",
 };
 
@@ -60,8 +61,27 @@ export default function ParentConsentForm() {
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  const playerSigRef = useRef();
+  const [loading, setLoading] = useState(true);
   const guardianSigRef = useRef();
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [booking, setBooking] = useState(null);
+
+  useEffect(() => {
+    console.log("ParentConsentForm mounted");
+    console.log("Location state:", location.state);
+    console.log("Location pathname:", location.pathname);
+
+    if (location.state && location.state.booking) {
+      console.log("Setting booking data:", location.state.booking);
+      setBooking(location.state.booking);
+      setLoading(false);
+    } else {
+      console.log("No booking data found in location state");
+      setLoading(false);
+      toast.error("No booking data found. Please go back and try again.");
+    }
+  }, [location.state]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -76,35 +96,102 @@ export default function ParentConsentForm() {
     Object.entries(initialForm).forEach(([key, val]) => {
       if (!form[key]) newErrors[key] = "Required";
     });
-    if (playerSigRef.current.isEmpty())
-      newErrors.playerSig = "Signature required";
     if (guardianSigRef.current.isEmpty())
       newErrors.guardianSig = "Signature required";
+    console.log(newErrors, "newErrors");
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(booking, "submit consent form");
     if (!validate()) return;
     setSubmitting(true);
-    // Prepare data (including signatures as base64)
+
+    if (!booking) {
+      toast.error("Booking information is missing.");
+      setSubmitting(false);
+      return;
+    }
+
+    // Prepare data (including signature as base64)
+    let signatureData = "";
+    try {
+      if (guardianSigRef.current && !guardianSigRef.current.isEmpty()) {
+        signatureData = guardianSigRef.current
+          .getCanvas()
+          .toDataURL("image/png");
+      }
+    } catch (error) {
+      console.error("Error getting signature:", error);
+      toast.error("Error processing signature. Please try again.");
+      setSubmitting(false);
+      return;
+    }
+
     const data = {
       ...form,
-      playerSignature: playerSigRef.current
-        .getTrimmedCanvas()
-        .toDataURL("image/png"),
-      guardianSignature: guardianSigRef.current
-        .getTrimmedCanvas()
-        .toDataURL("image/png"),
+      guardianSignature: signatureData,
+      parentBooking: booking._id,
     };
-    // TODO: send to backend
-    alert("Form submitted! (Implement backend upload)");
-    setSubmitting(false);
+
+    try {
+      console.log("Submitting consent form data:", data);
+
+      const response = await fetch("http://localhost:5000/api/consent-forms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        toast.success("Consent form submitted successfully!");
+        console.log("Consent form saved:", result.form);
+        setTimeout(() => navigate("/"), 2000);
+      } else {
+        toast.error(`Submission failed: ${result.message}`);
+        console.error("Consent form submission failed:", result);
+      }
+    } catch (error) {
+      toast.error("An error occurred while submitting the form.");
+      console.error("Error submitting consent form:", error);
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Toaster richColors />
+        <p>Loading booking details...</p>
+      </div>
+    );
+  }
+
+  if (!booking) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <Toaster richColors />
+        <div className="text-center">
+          <p className="text-red-600 mb-4">No booking data found.</p>
+          <Button
+            onClick={() => navigate("/")}
+            className="bg-red-600 hover:bg-red-700"
+          >
+            Go Back to Home
+          </Button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg my-8">
+      <Toaster richColors />
       <h1 className="text-2xl font-bold mb-4 text-center">
         Kids Registration, Consent & Health Declaration Form
       </h1>
@@ -565,27 +652,6 @@ export default function ParentConsentForm() {
             liable to any untoward incident that may arise due to exercise.
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label>Name and Signature of Player *</label>
-              <input
-                name="playerName"
-                value={form.playerName}
-                onChange={handleChange}
-                className="input mb-2"
-              />
-              <SignaturePad
-                ref={playerSigRef}
-                penColor="#ed3227"
-                canvasProps={{
-                  width: 300,
-                  height: 80,
-                  className: "border rounded",
-                }}
-              />
-              {errors.playerSig && (
-                <span className="text-red-500 text-xs">{errors.playerSig}</span>
-              )}
-            </div>
             <div>
               <label>Name and Signature of Guardian *</label>
               <input
