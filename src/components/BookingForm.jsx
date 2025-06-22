@@ -25,7 +25,7 @@ import axios from "axios";
 import PaymentProcessor from "./PaymentProcessor.jsx";
 import { toast, Toaster } from "sonner";
 
-const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
+const BookingForm = ({ selectedPlan, onClose }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -42,7 +42,6 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
   const [showPayment, setShowPayment] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Sibling discount logic - apply to individual children
   const calculateChildPrice = (childIndex) => {
     const basePrice = parseInt(selectedPlan.price.replace(/,/g, "")) || 0;
     if (childIndex === 0) return basePrice; // First child pays full price
@@ -246,27 +245,22 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
     const start = new Date(startDate);
     let end;
 
-    if (planName.toLowerCase().includes("1-day")) {
-      end = start;
-    } else if (planName.toLowerCase().includes("3-day")) {
-      end = addDays(start, 2);
-    } else if (planName.toLowerCase().includes("5-day")) {
-      end = addDays(start, 4);
-    } else if (planName.toLowerCase().includes("10-day")) {
-      end = addDays(start, 9);
-    } else if (planName.toLowerCase().includes("20-day")) {
-      end = addDays(start, 19);
+    if (planName.toLowerCase().includes("1 day")) {
+      end = addDays(start, 1);
+    } else if (planName.toLowerCase().includes("1 week")) {
+      end = addDays(start, 7);
+    } else if (planName.toLowerCase().includes("full month")) {
+      end = addDays(start, 30);
     } else if (planName.toLowerCase().includes("full camp")) {
-      end =
-        selectedLocation === "abuDhabi"
-          ? new Date("2024-08-21")
-          : new Date("2024-08-19");
+      end = new Date("2025-08-21");
+    } else {
+      end = addDays(start, 1);
     }
 
     return {
       start: format(start, "MMMM d, yyyy"),
       end: format(end, "MMMM d, yyyy"),
-      days: Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1,
+      days: Math.ceil((end - start) / (1000 * 60 * 60 * 24)),
     };
   };
 
@@ -302,7 +296,6 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
     const bookingPayload = {
       ...formData,
       plan: selectedPlan,
-      location: selectedLocation,
       pricing: {
         originalTotal,
         totalDiscount,
@@ -314,16 +307,13 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
 
     try {
       console.log("Payment successful, saving booking...");
-      const response = await fetch(
-        "https://summercamp-server.onrender.com/api/bookings",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(bookingPayload),
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/bookings", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bookingPayload),
+      });
 
       const savedBookingResult = await response.json();
 
@@ -373,7 +363,6 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
   const fullBookingData = {
     ...formData,
     plan: selectedPlan,
-    location: selectedLocation,
     pricing: {
       originalTotal,
       totalDiscount,
@@ -406,14 +395,10 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
             <div>
               <h2 className="text-2xl font-bold">Book Your Camp</h2>
               <p className="text-gray-600 mt-1">
-                {selectedLocation === "abuDhabi"
-                  ? selectedPlan?.name?.toLowerCase().includes("football") ||
-                    selectedPlan?.description
-                      ?.toLowerCase()
-                      .includes("football")
-                    ? "Abu Dhabi - Full day access to Football Clinic"
-                    : "Abu Dhabi - Full day access to Kids Camp"
-                  : "Al Ain - Kids Camp (8:30 AM - 2 PM)"}
+                {selectedPlan?.name?.toLowerCase().includes("football") ||
+                selectedPlan?.description?.toLowerCase().includes("football")
+                  ? "Abu Dhabi - Full day access to Football Clinic"
+                  : "Abu Dhabi - Full day access to Kids Camp"}
               </p>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
@@ -427,16 +412,11 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
               <div>
                 <h3 className="font-semibold text-lg">{selectedPlan?.name}</h3>
                 <p className="text-gray-600">
-                  {selectedLocation === "abuDhabi"
-                    ? selectedPlan?.name?.toLowerCase().includes("football") ||
-                      selectedPlan?.description
-                        ?.toLowerCase()
-                        .includes("football")
-                      ? "Full day access to Football Clinic"
-                      : "Full day access to Kids Camp"
-                    : "Kids Camp (8:30 AM - 2 PM)"}
-                  {" - "}
-                  {selectedLocation === "abuDhabi" ? "Abu Dhabi" : "Al Ain"}
+                  {selectedPlan?.name?.toLowerCase().includes("football") ||
+                  selectedPlan?.description?.toLowerCase().includes("football")
+                    ? "Full day access to Football Clinic"
+                    : "Full day access to Kids Camp"}
+                  {" - Abu Dhabi"}
                 </p>
               </div>
               <div className="text-right">
@@ -641,12 +621,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
                   <Input
                     id="startDate"
                     type="date"
-                    min={`${new Date().getFullYear()}-${
-                      selectedLocation === "abuDhabi" ? "07-01" : "07-05"
-                    }`}
-                    max={`${new Date().getFullYear()}-${
-                      selectedLocation === "abuDhabi" ? "08-21" : "08-19"
-                    }`}
+                    min="2025-07-01"
+                    max="2025-08-21"
                     value={formData.startDate}
                     onChange={(e) =>
                       setFormData({ ...formData, startDate: e.target.value })

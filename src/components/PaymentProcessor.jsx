@@ -49,6 +49,7 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
   const [paymentError, setPaymentError] = useState(null);
   const [clientSecret, setClientSecret] = useState(null);
   const [isStripeReady, setIsStripeReady] = useState(false);
+  const [isInitializing, setIsInitializing] = useState(true);
 
   useEffect(() => {
     if (stripe && elements) {
@@ -57,25 +58,61 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
     }
   }, [stripe, elements]);
 
-  // Create PaymentIntent when component mounts
+  // Create PaymentIntent when component mounts - only once
   useEffect(() => {
     const initializePayment = async () => {
+      if (isInitializing) {
+        try {
+          setIsInitializing(true);
+          setPaymentError(null);
+          // Use final total with tax if available, otherwise fallback to plan price
+          let amount =
+            bookingData?.pricing?.finalTotal ?? bookingData.plan.price;
+          amount = Number(amount);
+          if (isNaN(amount) || amount <= 0)
+            throw new Error("Invalid payment amount");
+          console.log("Initializing payment for amount:", amount);
+          const paymentIntent = await createPaymentIntent(amount);
+          setClientSecret(paymentIntent.client_secret);
+          console.log("Payment intent created successfully");
+        } catch (error) {
+          console.error("Failed to initialize payment:", error);
+          setPaymentError("Failed to initialize payment. Please try again.");
+        } finally {
+          setIsInitializing(false);
+        }
+      }
+    };
+    initializePayment();
+  }, []); // Empty dependency array to run only once
+
+  const resetPayment = () => {
+    setClientSecret(null);
+    setPaymentError(null);
+    setIsProcessing(false);
+    setIsInitializing(true);
+    // Re-initialize payment
+    const initializePayment = async () => {
       try {
-        // Use final total with tax if available, otherwise fallback to plan price
+        setIsInitializing(true);
+        setPaymentError(null);
         let amount = bookingData?.pricing?.finalTotal ?? bookingData.plan.price;
         amount = Number(amount);
         if (isNaN(amount) || amount <= 0)
           throw new Error("Invalid payment amount");
-        console.log("Initializing payment for amount:", amount);
+        console.log("Re-initializing payment for amount:", amount);
         const paymentIntent = await createPaymentIntent(amount);
         setClientSecret(paymentIntent.client_secret);
+        console.log("Payment intent re-created successfully");
       } catch (error) {
-        console.error("Failed to initialize payment:", error);
+        console.error("Failed to re-initialize payment:", error);
         setPaymentError("Failed to initialize payment. Please try again.");
+      } finally {
+        setIsInitializing(false);
       }
     };
     initializePayment();
-  }, [bookingData?.pricing?.finalTotal, bookingData.plan.price]);
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -85,6 +122,12 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
         elements: !!elements,
         clientSecret: !!clientSecret,
       });
+      setPaymentError("Payment system not ready. Please try again.");
+      return;
+    }
+
+    if (isProcessing) {
+      console.log("Payment already in progress");
       return;
     }
 
@@ -92,6 +135,12 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
     setPaymentError(null);
 
     const cardElement = elements.getElement(CardElement);
+    if (!cardElement) {
+      setPaymentError("Card element not found. Please refresh and try again.");
+      setIsProcessing(false);
+      return;
+    }
+
     console.log("Processing payment with card element");
 
     try {
@@ -102,7 +151,7 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
           payment_method: {
             card: cardElement,
             billing_details: {
-              name: bookingData.parentName,
+              name: `${bookingData.firstName} ${bookingData.lastName}`,
               email: bookingData.parentEmail,
               phone: bookingData.parentPhone,
               address: {
@@ -115,18 +164,30 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
 
       if (error) {
         console.error("Payment error:", error);
-        setPaymentError(error.message);
-        onError(error);
-      } else if (paymentIntent.status === "succeeded") {
+        if (error.code === "payment_intent_unexpected_state") {
+          setPaymentError("Payment session expired. Please try again.");
+          // Reset payment intent
+          resetPayment();
+        } else {
+          setPaymentError(error.message);
+          onError(error);
+        }
+      } else if (paymentIntent && paymentIntent.status === "succeeded") {
         console.log("Payment succeeded:", paymentIntent);
         console.log("Calling onSuccess from PaymentForm");
-        console.log("onSuccess function:", onSuccess);
         onSuccess({
           paymentId: paymentIntent.id,
           amount: paymentIntent.amount,
           currency: paymentIntent.currency,
         });
         console.log("onSuccess called from PaymentForm");
+      } else {
+        console.error(
+          "Payment intent status unexpected:",
+          paymentIntent?.status
+        );
+        setPaymentError("Payment status unexpected. Please try again.");
+        onError(new Error("Payment status unexpected"));
       }
     } catch (error) {
       console.error("Unexpected payment error:", error);
@@ -163,9 +224,21 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
         </div>
 
         {paymentError && (
-          <div className="flex items-center gap-2 text-red-600 text-sm">
-            <AlertCircle className="h-4 w-4" />
-            <span>{paymentError}</span>
+          <div className="flex flex-col gap-2 text-red-600 text-sm">
+            <div className="flex items-center gap-2">
+              <AlertCircle className="h-4 w-4" />
+              <span>{paymentError}</span>
+            </div>
+            {paymentError.includes("expired") && (
+              <Button
+                type="button"
+                onClick={resetPayment}
+                className="text-xs bg-red-600 hover:bg-red-700 text-white"
+                size="sm"
+              >
+                Retry Payment
+              </Button>
+            )}
           </div>
         )}
       </div>
@@ -207,10 +280,17 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
         </Button>
         <Button
           type="submit"
-          disabled={!isStripeReady || isProcessing || !clientSecret}
+          disabled={
+            !isStripeReady || isProcessing || !clientSecret || isInitializing
+          }
           className="flex-1 bg-blue-600 hover:bg-blue-700"
         >
-          {isProcessing ? (
+          {isInitializing ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Initializing...
+            </div>
+          ) : isProcessing ? (
             <div className="flex items-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               Processing...

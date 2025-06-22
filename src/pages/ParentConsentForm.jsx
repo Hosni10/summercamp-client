@@ -139,14 +139,11 @@ export default function ParentConsentForm() {
     try {
       console.log("Submitting consent form data:", data);
 
-      const response = await fetch(
-        "https://summercamp-server.onrender.com/api/consent-forms",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
-        }
-      );
+      const response = await fetch("http://localhost:5000/api/consent-forms", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
 
       const result = await response.json();
 
@@ -193,385 +190,432 @@ export default function ParentConsentForm() {
   }
 
   return (
-    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-lg my-8">
+    <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg my-8">
       <Toaster richColors />
-      <h1 className="text-2xl font-bold mb-4 text-center">
+      <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
         Kids Registration, Consent & Health Declaration Form
       </h1>
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-8">
         {/* Kids Details */}
-        <section>
-          <h2 className="font-semibold text-lg mb-2">Kids Details</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <section className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <h2 className="font-bold text-xl mb-4 text-gray-800 border-b border-gray-300 pb-2">
+            Kids Details
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label>Kid Full Name *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Kid Full Name *
+              </label>
               <input
                 name="kidFullName"
                 value={form.kidFullName}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter full name"
               />
               {errors.kidFullName && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.kidFullName}
                 </span>
               )}
             </div>
             <div>
-              <label>Date of Birth *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Date of Birth *
+              </label>
               <input
                 name="dob"
                 type="date"
                 value={form.dob}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               />
               {errors.dob && (
-                <span className="text-red-500 text-xs">{errors.dob}</span>
+                <span className="text-red-500 text-sm mt-1 block">
+                  {errors.dob}
+                </span>
               )}
             </div>
             <div>
-              <label>Gender *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Gender *
+              </label>
               <select
                 name="gender"
                 value={form.gender}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               >
-                <option value="">Select</option>
+                <option value="">Select gender</option>
                 <option value="boy">Boy</option>
                 <option value="girl">Girl</option>
               </select>
               {errors.gender && (
-                <span className="text-red-500 text-xs">{errors.gender}</span>
+                <span className="text-red-500 text-sm mt-1 block">
+                  {errors.gender}
+                </span>
               )}
             </div>
             <div>
-              <label>City & Home Address *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                City & Home Address *
+              </label>
               <input
                 name="address"
                 value={form.address}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter address"
               />
               {errors.address && (
-                <span className="text-red-500 text-xs">{errors.address}</span>
+                <span className="text-red-500 text-sm mt-1 block">
+                  {errors.address}
+                </span>
               )}
             </div>
             <div>
-              <label>Preferred Language *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Preferred Language *
+              </label>
               <input
                 name="language"
                 value={form.language}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="e.g., English, Arabic"
               />
               {errors.language && (
-                <span className="text-red-500 text-xs">{errors.language}</span>
+                <span className="text-red-500 text-sm mt-1 block">
+                  {errors.language}
+                </span>
               )}
             </div>
           </div>
         </section>
+
         {/* Parent Guardian Details */}
-        <section>
-          <h2 className="font-semibold text-lg mb-2">
+        <section className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <h2 className="font-bold text-xl mb-4 text-gray-800 border-b border-gray-300 pb-2">
             Parent Guardian Details
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label>1st Parent Guardian Full Name *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                1st Parent Guardian Full Name *
+              </label>
               <input
                 name="parent1Name"
                 value={form.parent1Name}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter full name"
               />
               {errors.parent1Name && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.parent1Name}
                 </span>
               )}
             </div>
             <div>
-              <label>Relationship *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Relationship *
+              </label>
               <input
                 name="parent1Relation"
                 value={form.parent1Relation}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="e.g., Father, Mother, Guardian"
               />
               {errors.parent1Relation && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.parent1Relation}
                 </span>
               )}
             </div>
             <div>
-              <label>Phone Number *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number *
+              </label>
               <input
                 name="parent1Phone"
                 value={form.parent1Phone}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter phone number"
               />
               {errors.parent1Phone && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.parent1Phone}
                 </span>
               )}
             </div>
             <div>
-              <label>Email Address *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Email Address *
+              </label>
               <input
                 name="parent1Email"
                 type="email"
                 value={form.parent1Email}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter email address"
               />
               {errors.parent1Email && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.parent1Email}
                 </span>
               )}
             </div>
             <div>
-              <label>2nd Parent Guardian Full Name *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                2nd Parent Guardian Full Name *
+              </label>
               <input
                 name="parent2Name"
                 value={form.parent2Name}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter full name"
               />
               {errors.parent2Name && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.parent2Name}
                 </span>
               )}
             </div>
             <div>
-              <label>2nd Parent Guardian Phone Number *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                2nd Parent Guardian Phone Number *
+              </label>
               <input
                 name="parent2Phone"
                 value={form.parent2Phone}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter phone number"
               />
               {errors.parent2Phone && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.parent2Phone}
                 </span>
               )}
             </div>
           </div>
         </section>
+
         {/* Emergency Contact */}
-        <section>
-          <h2 className="font-semibold text-lg mb-2">
+        <section className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <h2 className="font-bold text-xl mb-4 text-gray-800 border-b border-gray-300 pb-2">
             Emergency Contact Details
           </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label>Name of Emergency Contact *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Name of Emergency Contact *
+              </label>
               <input
                 name="emergencyName"
                 value={form.emergencyName}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter emergency contact name"
               />
               {errors.emergencyName && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.emergencyName}
                 </span>
               )}
             </div>
             <div>
-              <label>Relationship *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Relationship *
+              </label>
               <input
                 name="emergencyRelation"
                 value={form.emergencyRelation}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="e.g., Uncle, Aunt, Family Friend"
               />
               {errors.emergencyRelation && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.emergencyRelation}
                 </span>
               )}
             </div>
             <div>
-              <label>Phone Number 1 *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number 1 *
+              </label>
               <input
                 name="emergencyPhone1"
                 value={form.emergencyPhone1}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter primary phone number"
               />
               {errors.emergencyPhone1 && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.emergencyPhone1}
                 </span>
               )}
             </div>
             <div>
-              <label>Alternative Phone Number 2 *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Alternative Phone Number 2 *
+              </label>
               <input
                 name="emergencyPhone2"
                 value={form.emergencyPhone2}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter alternative phone number"
               />
               {errors.emergencyPhone2 && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.emergencyPhone2}
                 </span>
               )}
             </div>
           </div>
         </section>
+
         {/* Pick Up & Drop Authorization */}
-        <section>
-          <h2 className="font-semibold text-lg mb-2">
+        <section className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <h2 className="font-bold text-xl mb-4 text-gray-800 border-b border-gray-300 pb-2">
             Pick Up & Drop Authorization
           </h2>
-          <div className="mb-2">
-            <label>
+          <div className="mb-4">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               List of individuals authorized to pick up your child *
             </label>
             <input
               name="pickupList"
               value={form.pickupList}
               onChange={handleChange}
-              className="input"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+              placeholder="List all authorized individuals"
             />
             {errors.pickupList && (
-              <span className="text-red-500 text-xs">{errors.pickupList}</span>
+              <span className="text-red-500 text-sm mt-1 block">
+                {errors.pickupList}
+              </span>
             )}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label>Name 1 *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Name 1 *
+              </label>
               <input
                 name="pickupName1"
                 value={form.pickupName1}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter first authorized person's name"
               />
               {errors.pickupName1 && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.pickupName1}
                 </span>
               )}
             </div>
             <div>
-              <label>Number *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Number *
+              </label>
               <input
                 name="pickupNumber1"
                 value={form.pickupNumber1}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter phone number"
               />
               {errors.pickupNumber1 && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.pickupNumber1}
                 </span>
               )}
             </div>
             <div>
-              <label>Name 2 *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Name 2 *
+              </label>
               <input
                 name="pickupName2"
                 value={form.pickupName2}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter second authorized person's name"
               />
               {errors.pickupName2 && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.pickupName2}
                 </span>
               )}
             </div>
             <div>
-              <label>Number *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Number *
+              </label>
               <input
                 name="pickupNumber2"
                 value={form.pickupNumber2}
                 onChange={handleChange}
-                className="input"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                placeholder="Enter phone number"
               />
               {errors.pickupNumber2 && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.pickupNumber2}
                 </span>
               )}
             </div>
           </div>
         </section>
-        {/* Authorizations & Consent */}
-        <section>
-          <h2 className="font-semibold text-lg mb-2">
-            Authorizations & Consent
-          </h2>
-          <div className="mb-2">
-            <label>Medical Release *</label>
-            <div className="text-gray-700 text-sm mb-2">
-              I authorise the camp staff to seek Medical treatment for my child
-              in case of an emergency.
-            </div>
-          </div>
-          <div className="mb-2">
-            <label>Photo Release *</label>
-            <div className="text-gray-700 text-sm mb-2">
-              I grant permission for my child's photograph to be used in camp
-              promotional materials or social media coverage of the event.
-            </div>
-          </div>
-          <div className="mb-2">
-            <label>Activity Consent *</label>
-            <div className="text-gray-700 text-sm mb-2">
-              I give permission for my child to participate in all camp
-              activities.
-            </div>
-          </div>
-        </section>
+
         {/* Medical Questionnaire */}
-        <section>
-          <h2 className="font-semibold text-lg mb-2">
+        <section className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <h2 className="font-bold text-xl mb-4 text-gray-800 border-b border-gray-300 pb-2">
             Physical Activity Readiness Questionnaire
           </h2>
-          <div className="space-y-2">
+          <div className="space-y-4">
             {medQuestions.map((q, i) => (
               <div
                 key={i}
-                className="flex flex-col md:flex-row md:items-center gap-2"
+                className="bg-white p-4 rounded-lg border border-gray-200"
               >
-                <label className="flex-1">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
                   {i + 1}. {q}
                 </label>
-                <div className="flex gap-4">
-                  <label>
+                <div className="flex gap-6">
+                  <label className="flex items-center">
                     <input
                       type="radio"
                       name={`medQ${i + 1}`}
                       value="Yes"
                       checked={form[`medQ${i + 1}`] === "Yes"}
                       onChange={() => handleRadio(`medQ${i + 1}`, "Yes")}
-                    />{" "}
-                    Yes
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">Yes</span>
                   </label>
-                  <label>
+                  <label className="flex items-center">
                     <input
                       type="radio"
                       name={`medQ${i + 1}`}
                       value="No"
                       checked={form[`medQ${i + 1}`] === "No"}
                       onChange={() => handleRadio(`medQ${i + 1}`, "No")}
-                    />{" "}
-                    No
+                      className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                    />
+                    <span className="ml-2 text-sm text-gray-700">No</span>
                   </label>
                 </div>
                 {errors[`medQ${i + 1}`] && (
-                  <span className="text-red-500 text-xs">
+                  <span className="text-red-500 text-sm mt-1 block">
                     {errors[`medQ${i + 1}`]}
                   </span>
                 )}
@@ -579,66 +623,115 @@ export default function ParentConsentForm() {
             ))}
           </div>
         </section>
+
         {/* Medical Details */}
-        <section>
-          <h2 className="font-semibold text-lg mb-2">Medical Details</h2>
-          <div className="mb-2">
-            <label>
-              Describe any other important health-related information about you
-              *
-            </label>
-            <textarea
-              name="healthInfo"
-              value={form.healthInfo}
-              onChange={handleChange}
-              className="input"
-              rows={3}
-            />
-            {errors.healthInfo && (
-              <span className="text-red-500 text-xs">{errors.healthInfo}</span>
-            )}
-          </div>
-          <div className="mb-2">
-            <label>
-              List all prescriptions and over-the-counter medications you are
-              currently taking *
-            </label>
-            <textarea
-              name="medications"
-              value={form.medications}
-              onChange={handleChange}
-              className="input"
-              rows={2}
-            />
-            {errors.medications && (
-              <span className="text-red-500 text-xs">{errors.medications}</span>
-            )}
-          </div>
-          <div className="mb-2">
-            <label>
-              Do you have any immediate health concerns that you think may
-              affect your performance? Please specify *
-            </label>
-            <textarea
-              name="healthConcerns"
-              value={form.healthConcerns}
-              onChange={handleChange}
-              className="input"
-              rows={2}
-            />
-            {errors.healthConcerns && (
-              <span className="text-red-500 text-xs">
-                {errors.healthConcerns}
-              </span>
-            )}
+        <section className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <h2 className="font-bold text-xl mb-4 text-gray-800 border-b border-gray-300 pb-2">
+            Medical Details
+          </h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Describe any other important health-related information about
+                you *
+              </label>
+              <textarea
+                name="healthInfo"
+                value={form.healthInfo}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                rows={3}
+                placeholder="Describe any health conditions, allergies, or important medical information"
+              />
+              {errors.healthInfo && (
+                <span className="text-red-500 text-sm mt-1 block">
+                  {errors.healthInfo}
+                </span>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                List all prescriptions and over-the-counter medications you are
+                currently taking *
+              </label>
+              <textarea
+                name="medications"
+                value={form.medications}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                rows={2}
+                placeholder="List all current medications"
+              />
+              {errors.medications && (
+                <span className="text-red-500 text-sm mt-1 block">
+                  {errors.medications}
+                </span>
+              )}
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Do you have any immediate health concerns that you think may
+                affect your performance? Please specify *
+              </label>
+              <textarea
+                name="healthConcerns"
+                value={form.healthConcerns}
+                onChange={handleChange}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                rows={2}
+                placeholder="Describe any immediate health concerns"
+              />
+              {errors.healthConcerns && (
+                <span className="text-red-500 text-sm mt-1 block">
+                  {errors.healthConcerns}
+                </span>
+              )}
+            </div>
           </div>
         </section>
+
+        {/* Authorizations & Consent - MOVED ABOVE DECLARATION */}
+        <section className="bg-blue-50 p-6 rounded-lg border border-blue-200">
+          <h2 className="font-bold text-xl mb-4 text-blue-800 border-b border-blue-300 pb-2">
+            Authorizations & Consent
+          </h2>
+          <div className="space-y-4">
+            <div className="bg-white p-4 rounded-lg border border-blue-200">
+              <h3 className="font-semibold text-blue-800 mb-2">
+                Medical Release *
+              </h3>
+              <div className="text-gray-700 text-sm mb-3">
+                I authorise the camp staff to seek Medical treatment for my
+                child in case of an emergency.
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-blue-200">
+              <h3 className="font-semibold text-blue-800 mb-2">
+                Photo Release *
+              </h3>
+              <div className="text-gray-700 text-sm mb-3">
+                I grant permission for my child's photograph to be used in camp
+                promotional materials or social media coverage of the event.
+              </div>
+            </div>
+            <div className="bg-white p-4 rounded-lg border border-blue-200">
+              <h3 className="font-semibold text-blue-800 mb-2">
+                Activity Consent *
+              </h3>
+              <div className="text-gray-700 text-sm mb-3">
+                I give permission for my child to participate in all camp
+                activities.
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Declaration & Signatures */}
-        <section>
-          <h2 className="font-semibold text-lg mb-2">
+        <section className="bg-gray-50 p-6 rounded-lg border border-gray-200">
+          <h2 className="font-bold text-xl mb-4 text-gray-800 border-b border-gray-300 pb-2">
             Declaration and Data Subject Consent
           </h2>
-          <div className="mb-2 text-gray-700 text-sm">
+          <div className="mb-6 text-gray-700 text-sm bg-white p-4 rounded-lg border border-gray-200">
             <strong>
               I declare that I have read, understood, and answered honestly all
               the questions above.
@@ -654,36 +747,42 @@ export default function ParentConsentForm() {
             <br />I also understand that ADSS & Atomics Academy will not be
             liable to any untoward incident that may arise due to exercise.
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label>Name and Signature of Guardian *</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Name and Signature of Guardian *
+              </label>
               <input
                 name="guardianName"
                 value={form.guardianName}
                 onChange={handleChange}
-                className="input mb-2"
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors mb-3"
+                placeholder="Enter guardian's full name"
               />
-              <SignaturePad
-                ref={guardianSigRef}
-                penColor="#ed3227"
-                canvasProps={{
-                  width: 300,
-                  height: 80,
-                  className: "border rounded",
-                }}
-              />
+              <div className="border-2 border-gray-300 rounded-lg p-2 bg-white">
+                <SignaturePad
+                  ref={guardianSigRef}
+                  penColor="#ed3227"
+                  canvasProps={{
+                    width: 300,
+                    height: 80,
+                    className: "border rounded w-full",
+                  }}
+                />
+              </div>
               {errors.guardianSig && (
-                <span className="text-red-500 text-xs">
+                <span className="text-red-500 text-sm mt-1 block">
                   {errors.guardianSig}
                 </span>
               )}
             </div>
           </div>
         </section>
-        <div className="text-center mt-6">
+
+        <div className="text-center mt-8">
           <Button
             type="submit"
-            className="bg-[#ed3227] text-white px-8 py-3 text-lg"
+            className="bg-[#ed3227] hover:bg-[#d42a1f] text-white px-8 py-3 text-lg rounded-lg transition-colors"
             disabled={submitting}
           >
             {submitting ? "Submitting..." : "Submit Form"}

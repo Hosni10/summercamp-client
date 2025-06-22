@@ -174,7 +174,6 @@ function ImageModal({ src, alt, open, onClose }) {
 function FootballClinic() {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
-  const [selectedLocation, setSelectedLocation] = useState("abuDhabi");
   const [modalImg, setModalImg] = useState(null);
 
   const handlePlanSelect = (plan) => {
@@ -186,10 +185,6 @@ function FootballClinic() {
     console.log("Booking submitted:", data);
     setShowBookingForm(false);
     // The BookingForm handles everything internally now
-  };
-
-  const getLocationName = (location) => {
-    return location === "abuDhabi" ? "Abu Dhabi" : "Al Ain";
   };
 
   return (
@@ -217,6 +212,14 @@ function FootballClinic() {
               enhance your skills, improve your game, and take your football
               abilities to the next level.
             </p>
+            <div className="mb-8">
+              <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
+                <Calendar className="h-5 w-5" />
+                <span className="font-medium">
+                  July 1st - August 21st, 2025
+                </span>
+              </div>
+            </div>
             <Button
               className="bg-[#ed3227] hover:bg-[#ed3227]/90 text-white px-8 py-6 text-lg"
               onClick={() =>
@@ -339,36 +342,16 @@ function FootballClinic() {
             </p>
           </div>
 
-          {/* Location Selection */}
+          {/* Location Display */}
           <div className="flex justify-center mb-8">
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              <button
-                className={`px-6 py-3 rounded-md font-medium transition-colors ${
-                  selectedLocation === "abuDhabi"
-                    ? "bg-[#ed3227] text-white"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-                onClick={() => setSelectedLocation("abuDhabi")}
-              >
-                <MapPin className="h-4 w-4 inline mr-2" />
-                Abu Dhabi
-              </button>
-              <button
-                className={`px-6 py-3 rounded-md font-medium transition-colors ${
-                  selectedLocation === "alAin"
-                    ? "bg-[#ed3227] text-white"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-                onClick={() => setSelectedLocation("alAin")}
-              >
-                <MapPin className="h-4 w-4 inline mr-2" />
-                Al Ain
-              </button>
+            <div className="bg-[#ed3227] text-white px-6 py-3 rounded-lg font-medium">
+              <MapPin className="h-4 w-4 inline mr-2" />
+              Abu Dhabi
             </div>
           </div>
 
           <div className="grid md:grid-cols-2 gap-8">
-            {clinicPlans[selectedLocation].map((plan, index) => (
+            {clinicPlans.abuDhabi.map((plan, index) => (
               <Card
                 key={index}
                 className={`relative overflow-hidden flex flex-col ${
@@ -417,7 +400,6 @@ function FootballClinic() {
       {showBookingForm && selectedPlan && (
         <BookingForm
           selectedPlan={selectedPlan}
-          selectedLocation={selectedLocation}
           onClose={() => setShowBookingForm(false)}
         />
       )}
