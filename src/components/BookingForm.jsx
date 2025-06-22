@@ -307,13 +307,24 @@ const BookingForm = ({ selectedPlan, onClose }) => {
 
     try {
       console.log("Payment successful, saving booking...");
-      const response = await fetch("http://localhost:5000/api/bookings", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(bookingPayload),
-      });
+      console.log(
+        "API URL:",
+        `${
+          import.meta.env.VITE_SERVER_URL || "http://localhost:5000"
+        }/api/bookings`
+      );
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_SERVER_URL || "http://localhost:5000"
+        }/api/bookings`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bookingPayload),
+        }
+      );
 
       const savedBookingResult = await response.json();
 

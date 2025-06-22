@@ -26,19 +26,18 @@ export const formatCurrency = (amount, currency = "AED") => {
 export const createPaymentIntent = async (amount, currency = "aed") => {
   try {
     console.log("Creating payment intent for amount:", amount);
-    const response = await fetch(
-      "http://localhost:5000/create-payment-intent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: Math.round(Number(amount)),
-          currency,
-        }),
-      }
-    );
+    const serverUrl =
+      import.meta.env.VITE_SERVER_URL || "http://localhost:5000";
+    const response = await fetch(`${serverUrl}/create-payment-intent`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: Math.round(Number(amount)),
+        currency,
+      }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
