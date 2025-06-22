@@ -271,11 +271,12 @@ const ParentConsentForm = () => {
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(data),
+          body: JSON.stringify(formData),
         }
       );
 
       const result = await response.json();
+      console.log("📡 Response result:", result);
 
       if (response.ok && result.success) {
         toast.success("Consent form submitted successfully!");
