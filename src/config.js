@@ -6,8 +6,7 @@ export const config = {
 
   // Frontend URL - uses environment variable with fallback to production
   frontendUrl:
-    import.meta.env.VITE_DOMAIN_URL ||
-    "https://summercamp-client-67a8.vercel.app",
+    import.meta.env.VITE_DOMAIN_URL || "https://summercamp-client.vercel.app",
 
   // Stripe configuration
   stripePublishableKey: import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY,
