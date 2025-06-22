@@ -314,11 +314,16 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
 
     try {
       console.log("Payment successful, saving booking...");
-      const response = await fetch("http://localhost:5000/api/bookings", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(bookingPayload),
-      });
+      const response = await fetch(
+        "https://summercamp-server.onrender.com/api/bookings",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(bookingPayload),
+        }
+      );
 
       const savedBookingResult = await response.json();
 

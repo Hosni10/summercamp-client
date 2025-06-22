@@ -14,8 +14,14 @@ export default defineConfig({
   server: {
     proxy: {
       "/api": {
-        target: "http://localhost:5000",
+        target: "https://summercamp-server.onrender.com",
         changeOrigin: true,
+        secure: true,
+      },
+      "/create-payment-intent": {
+        target: "https://summercamp-server.onrender.com",
+        changeOrigin: true,
+        secure: true,
       },
     },
   },

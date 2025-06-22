@@ -27,7 +27,7 @@ export const createPaymentIntent = async (amount, currency = "aed") => {
   try {
     console.log("Creating payment intent for amount:", amount);
     const response = await fetch(
-      "http://localhost:5000/create-payment-intent",
+      "https://summercamp-server.onrender.com/create-payment-intent",
       {
         method: "POST",
         headers: {
