@@ -34,13 +34,40 @@ const BookingForm = ({ selectedPlan, onClose }) => {
     parentPhone: "",
     parentAddress: "",
     numberOfChildren: 1,
-    children: [{ name: "", age: "", gender: "" }],
+    children: [{ name: "", dateOfBirth: "", gender: "" }],
     startDate: "",
   });
 
   const [errors, setErrors] = useState({});
   const [showPayment, setShowPayment] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Function to calculate age from date of birth
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return null;
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age;
+  };
+
+  // Function to validate age range (4-12 years)
+  const validateAge = (dateOfBirth) => {
+    const age = calculateAge(dateOfBirth);
+    if (age === null) return "Date of birth is required";
+    if (age < 4) return "Child must be at least 4 years old";
+    if (age > 12) return "Child must be 12 years old or younger";
+    return null;
+  };
 
   const calculateChildPrice = (childIndex) => {
     const basePrice = parseInt(selectedPlan.price.replace(/,/g, "")) || 0;
@@ -129,8 +156,13 @@ const BookingForm = ({ selectedPlan, onClose }) => {
         errors[`child${index}Name`] =
           "Child name must be maximum 20 characters";
       }
-      if (!child.age || child.age < 1)
-        errors[`child${index}Age`] = "Valid age is required";
+
+      // Validate date of birth and age
+      const ageValidation = validateAge(child.dateOfBirth);
+      if (ageValidation) {
+        errors[`child${index}DateOfBirth`] = ageValidation;
+      }
+
       if (!child.gender) errors[`child${index}Gender`] = "Gender is required";
     });
 
@@ -156,6 +188,18 @@ const BookingForm = ({ selectedPlan, onClose }) => {
           "Child name must be maximum 20 characters";
       } else {
         delete newErrors[`child${idx}Name`];
+      }
+      setErrors(newErrors);
+    }
+
+    // Real-time validation for date of birth
+    if (field === "dateOfBirth") {
+      const newErrors = { ...errors };
+      const ageValidation = validateAge(value);
+      if (ageValidation) {
+        newErrors[`child${idx}DateOfBirth`] = ageValidation;
+      } else {
+        delete newErrors[`child${idx}DateOfBirth`];
       }
       setErrors(newErrors);
     }
@@ -233,7 +277,7 @@ const BookingForm = ({ selectedPlan, onClose }) => {
     let updated = [...formData.children];
     if (num > updated.length) {
       for (let i = updated.length; i < num; i++) {
-        updated.push({ name: "", age: "", gender: "" });
+        updated.push({ name: "", dateOfBirth: "", gender: "" });
       }
     } else {
       updated = updated.slice(0, num);
@@ -366,9 +410,23 @@ const BookingForm = ({ selectedPlan, onClose }) => {
   };
 
   const handlePaymentError = (error) => {
-    toast.error(`Payment failed: ${error.message}`);
+    console.log("Payment error in BookingForm:", error);
     setIsSubmitting(false);
     setShowPayment(false);
+
+    // Navigate to payment error page with error details
+    navigate("/payment-error", {
+      state: {
+        error: {
+          message: error.message || "Payment processing failed",
+          code: error.code || "UNKNOWN_ERROR",
+          details:
+            error.details ||
+            "An unexpected error occurred during payment processing.",
+        },
+        bookingData: fullBookingData,
+      },
+    });
   };
 
   const fullBookingData = {
@@ -576,20 +634,24 @@ const BookingForm = ({ selectedPlan, onClose }) => {
                         )}
                       </div>
                       <div>
-                        <Label htmlFor={`childAge_${idx}`}>Age</Label>
+                        <Label htmlFor={`childDateOfBirth_${idx}`}>
+                          Date of Birth
+                        </Label>
                         <Input
-                          id={`childAge_${idx}`}
-                          type="number"
-                          min="4"
-                          max="12"
-                          value={child.age}
+                          id={`childDateOfBirth_${idx}`}
+                          type="date"
+                          value={child.dateOfBirth}
                           onChange={(e) =>
-                            handleChildrenChange(idx, "age", e.target.value)
+                            handleChildrenChange(
+                              idx,
+                              "dateOfBirth",
+                              e.target.value
+                            )
                           }
                         />
-                        {errors[`childAge_${idx}`] && (
+                        {errors[`childDateOfBirth_${idx}`] && (
                           <p className="text-red-500 text-sm mt-1">
-                            {errors[`childAge_${idx}`]}
+                            {errors[`childDateOfBirth_${idx}`]}
                           </p>
                         )}
                       </div>

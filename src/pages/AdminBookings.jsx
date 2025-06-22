@@ -16,6 +16,24 @@ function AdminBookings() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Function to calculate age from date of birth
+  const calculateAge = (dateOfBirth) => {
+    if (!dateOfBirth) return null;
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age;
+  };
+
   useEffect(() => {
     fetchBookings();
   }, []);
@@ -23,37 +41,37 @@ function AdminBookings() {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/bookings");
-      if (response.status !== 200) {
-        throw new Error("Failed to fetch bookings");
-      }
-      const data = response.data;
-      setBookings(data.bookings);
-    } catch (error) {
-      console.error("Error fetching bookings:", error);
-      setError(error.message);
+      const response = await axios.get(
+        `${
+          import.meta.env.VITE_SERVER_URL || "http://localhost:5000"
+        }/api/bookings`
+      );
+      setBookings(response.data.bookings);
+      setError(null);
+    } catch (err) {
+      setError("Failed to fetch bookings");
+      console.error("Error fetching bookings:", err);
     } finally {
       setLoading(false);
     }
   };
 
   const exportToExcel = () => {
-    // Convert bookings to CSV format
     const headers = [
       "Booking ID",
       "First Name",
       "Last Name",
-      "Parent Email",
-      "Parent Phone",
-      "Parent Address",
+      "Email",
+      "Phone",
+      "Address",
       "Number of Children",
       "Children Names",
       "Children Ages",
       "Children Genders",
       "Start Date",
-      "Membership Plan",
+      "Plan",
       "Location",
-      "Total Amount Paid",
+      "Total Amount",
       "Booking Date",
     ];
 
@@ -66,7 +84,9 @@ function AdminBookings() {
       booking.parentAddress,
       booking.numberOfChildren,
       booking.children.map((child) => child.name).join(", "),
-      booking.children.map((child) => child.age).join(", "),
+      booking.children
+        .map((child) => calculateAge(child.dateOfBirth))
+        .join(", "),
       booking.children.map((child) => child.gender).join(", "),
       booking.startDate,
       booking.membershipPlan,
