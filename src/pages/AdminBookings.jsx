@@ -10,6 +10,7 @@ import {
 import { Badge } from "@/components/ui/badge.jsx";
 import { Download, Users, Calendar, MapPin } from "lucide-react";
 import axios from "axios";
+import { getApiUrl, apiEndpoints } from "../config.js";
 
 function AdminBookings() {
   const [bookings, setBookings] = useState([]);
@@ -23,7 +24,7 @@ function AdminBookings() {
   const fetchBookings = async () => {
     try {
       setLoading(true);
-      const response = await axios.get("/api/bookings");
+      const response = await axios.get(getApiUrl(apiEndpoints.bookings));
       if (response.status !== 200) {
         throw new Error("Failed to fetch bookings");
       }

@@ -24,6 +24,7 @@ import {
 import axios from "axios";
 import PaymentProcessor from "./PaymentProcessor.jsx";
 import { toast, Toaster } from "sonner";
+import { getApiUrl, apiEndpoints } from "../config.js";
 
 const BookingForm = ({ selectedPlan, onClose }) => {
   const navigate = useNavigate();
@@ -307,7 +308,7 @@ const BookingForm = ({ selectedPlan, onClose }) => {
 
     try {
       console.log("Payment successful, saving booking...");
-      const response = await fetch("http://localhost:5000/api/bookings", {
+      const response = await fetch(`${getApiUrl()}${apiEndpoints.bookings}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

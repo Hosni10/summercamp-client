@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "../components/ui/button.jsx";
 import SignaturePad from "react-signature-canvas";
 import { Toaster, toast } from "sonner";
+import { getApiUrl, apiEndpoints } from "../config.js";
 
 const initialForm = {
   // Kids Details
@@ -139,11 +140,14 @@ export default function ParentConsentForm() {
     try {
       console.log("Submitting consent form data:", data);
 
-      const response = await fetch("http://localhost:5000/api/consent-forms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `${getApiUrl()}${apiEndpoints.consentForms}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      );
 
       const result = await response.json();
 

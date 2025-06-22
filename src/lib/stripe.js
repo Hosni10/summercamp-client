@@ -1,5 +1,6 @@
 // Stripe configuration and utility functions
 import { loadStripe } from "@stripe/stripe-js";
+import { getApiUrl, apiEndpoints } from "../config.js";
 
 // Initialize Stripe with your publishable key from environment variables
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY)
@@ -26,19 +27,16 @@ export const formatCurrency = (amount, currency = "AED") => {
 export const createPaymentIntent = async (amount, currency = "aed") => {
   try {
     console.log("Creating payment intent for amount:", amount);
-    const response = await fetch(
-      "http://localhost:5000/create-payment-intent",
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          amount: Math.round(Number(amount)),
-          currency,
-        }),
-      }
-    );
+    const response = await fetch(getApiUrl(apiEndpoints.createPaymentIntent), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        amount: Math.round(Number(amount)),
+        currency,
+      }),
+    });
 
     if (!response.ok) {
       const errorData = await response.json();
