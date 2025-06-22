@@ -20,7 +20,6 @@ import {
 } from "./ui/card.jsx";
 import { Badge } from "./ui/badge.jsx";
 import { CreditCard, Lock, AlertCircle, X } from "lucide-react";
-import { loadStripe } from "@stripe/stripe-js";
 import { format, addDays } from "date-fns";
 
 // Stripe Elements styling
@@ -72,12 +71,21 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
           if (isNaN(amount) || amount <= 0)
             throw new Error("Invalid payment amount");
           console.log("Initializing payment for amount:", amount);
+          console.log(
+            "Using Stripe key:",
+            import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY?.substring(0, 20) +
+              "..."
+          );
           const paymentIntent = await createPaymentIntent(amount);
+          console.log("Payment intent created successfully:", paymentIntent);
           setClientSecret(paymentIntent.client_secret);
-          console.log("Payment intent created successfully");
+          console.log(
+            "Client secret set:",
+            paymentIntent.client_secret?.substring(0, 20) + "..."
+          );
         } catch (error) {
           console.error("Failed to initialize payment:", error);
-          setPaymentError("Failed to initialize payment. Please try again.");
+          setPaymentError(`Failed to initialize payment: ${error.message}`);
         } finally {
           setIsInitializing(false);
         }
@@ -145,6 +153,10 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
 
     try {
       // Confirm payment with Stripe
+      console.log(
+        "Confirming payment with client secret:",
+        clientSecret?.substring(0, 20) + "..."
+      );
       const { error, paymentIntent } = await stripe.confirmCardPayment(
         clientSecret,
         {
@@ -164,8 +176,18 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
 
       if (error) {
         console.error("Payment error:", error);
+        console.error("Error details:", {
+          type: error.type,
+          code: error.code,
+          message: error.message,
+          decline_code: error.decline_code,
+        });
         if (error.code === "payment_intent_unexpected_state") {
           setPaymentError("Payment session expired. Please try again.");
+          // Reset payment intent
+          resetPayment();
+        } else if (error.code === "resource_missing") {
+          setPaymentError("Payment session not found. Please try again.");
           // Reset payment intent
           resetPayment();
         } else {
@@ -320,9 +342,7 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
   useEffect(() => {
     // Initialize Stripe
     const initStripe = async () => {
-      const stripe = await loadStripe(
-        import.meta.env.VITE_STRIPE_PUBLISHABLE_KEY
-      );
+      const stripe = await stripePromise;
       console.log("Stripe initialized:", !!stripe);
       setStripePromise(stripe);
     };
