@@ -29,7 +29,7 @@ const clinicPlans = {
     {
       name: "Test Plan",
       description: "Try our football clinic for just 0.5 dirham",
-      price: "1",
+      price: "2",
       features: [
         "Professional coaching",
         "Skill assessment",
