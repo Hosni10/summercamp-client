@@ -269,11 +269,44 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
   };
 
   const getAccessPeriod = (startDate, planName, location) => {
+    // Validate startDate
+    if (!startDate || !planName) return null;
+
+    // Check if startDate is a valid date
     const start = new Date(startDate);
+    if (isNaN(start.getTime())) {
+      console.error("Invalid start date:", startDate);
+      return null;
+    }
+
     let end;
     let description = "";
-    if (!startDate || !planName) return null;
-    if (planName.toLowerCase().includes("1-day")) {
+
+    // Handle Football Clinic plans
+    if (planName.toLowerCase().includes("1 day access")) {
+      end = start;
+      description = "1 day access";
+    } else if (
+      planName.toLowerCase().includes("1 week") ||
+      planName.toLowerCase().includes("3 sessions")
+    ) {
+      end = addDays(start, 6); // 1 week = 7 days (including start day)
+      description = "1 week access (3 sessions)";
+    } else if (
+      planName.toLowerCase().includes("full month") ||
+      planName.toLowerCase().includes("12 sessions")
+    ) {
+      end = addDays(start, 29); // 1 month = 30 days (including start day)
+      description = "Full month access (12 sessions)";
+    } else if (
+      planName.toLowerCase().includes("full camp access") ||
+      planName.toLowerCase().includes("21 sessions")
+    ) {
+      end = addDays(start, 20); // 21 sessions = 21 days (including start day)
+      description = "Full camp access (21 sessions)";
+    }
+    // Handle Kids Camp plans
+    else if (planName.toLowerCase().includes("1-day")) {
       end = start;
       description = "1 day access (Monday to Friday only)";
     } else if (planName.toLowerCase().includes("3-day")) {
@@ -291,10 +324,21 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
     } else if (planName.toLowerCase().includes("full camp")) {
       end =
         location === "abuDhabi"
-          ? new Date("2024-08-21")
-          : new Date("2024-08-19");
+          ? new Date("2025-08-21")
+          : new Date("2025-08-19");
       description = "Full camp access (unlimited days)";
+    } else {
+      // Default fallback for other plans
+      end = start;
+      description = "Access period based on selected plan";
     }
+
+    // Validate end date
+    if (isNaN(end.getTime())) {
+      console.error("Invalid end date calculated for plan:", planName);
+      return null;
+    }
+
     return {
       start: format(start, "MMMM d, yyyy"),
       end: format(end, "MMMM d, yyyy"),
@@ -334,16 +378,31 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
             </h3>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between">
+                <span>Parent Name:</span>
+                <span className="font-medium">
+                  {bookingData.firstName} {bookingData.lastName}
+                </span>
+              </div>
+              <div className="flex justify-between">
                 <span>Plan:</span>
                 <span className="font-medium">{bookingData.plan.name}</span>
               </div>
               {/* Duration */}
               {(() => {
+                console.log("PaymentProcessor - Booking data:", {
+                  startDate: bookingData.startDate,
+                  planName: bookingData.plan?.name,
+                  location: bookingData.location,
+                });
+
                 const access = getAccessPeriod(
                   bookingData.startDate,
                   bookingData.plan.name,
                   bookingData.location
                 );
+
+                console.log("PaymentProcessor - Access period result:", access);
+
                 return access ? (
                   <div className="flex flex-col gap-1">
                     <div className="flex justify-between">

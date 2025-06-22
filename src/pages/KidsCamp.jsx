@@ -39,7 +39,7 @@ const campPlans = {
       description: "Great for a short camp experience",
       price: "650",
       features: [
-        "All 1-day features",
+        "Full day camp activities",
         "Extended skill development",
         "Progress tracking",
       ],
@@ -49,7 +49,7 @@ const campPlans = {
       description: "Complete summer camp experience",
       price: "850",
       features: [
-        "All 3-day features",
+        "Full day camp activities",
         "Full week activities",
         "Individual attention",
       ],
@@ -60,10 +60,9 @@ const campPlans = {
       description: "Extended camp experience",
       price: "1,600",
       features: [
-        "All 5-day features",
+        "Full day camp activities",
         "Advanced activities",
         "Special workshops",
-        "Extended care options",
       ],
     },
     {
@@ -71,9 +70,8 @@ const campPlans = {
       description: "Full summer camp experience",
       price: "3,000",
       features: [
-        "All 10-day features",
+        "Full day camp activities",
         "Complete summer program",
-        "Priority registration",
         "Exclusive activities",
       ],
     },
@@ -82,10 +80,9 @@ const campPlans = {
       description: "Unlimited access to all camp days and activities",
       price: "5,700",
       features: [
-        "All 20-day features",
+        "Full day camp activities",
         "Unlimited access",
         "Personalized coaching",
-        "Exclusive events",
       ],
       popular: false,
     },

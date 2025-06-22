@@ -73,85 +73,160 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
   const finalTotal = totalAmount + taxAmount;
 
   const validateForm = () => {
-    const newErrors = {};
-    const requiredFields = [
-      "firstName",
-      "lastName",
-      "parentEmail",
-      "parentPhone",
-      "parentAddress",
-      "startDate",
-    ];
-    requiredFields.forEach((field) => {
-      if (!formData[field]) {
-        newErrors[field] = "This field is required";
-      }
-    });
-    // Email validation
-    if (
-      formData.parentEmail &&
-      !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(
-        formData.parentEmail
-      )
-    ) {
-      newErrors.parentEmail =
-        "Please enter a valid email address (e.g. john@email.com)";
+    const errors = {};
+
+    // Basic validation
+    if (!formData.firstName.trim()) {
+      errors.firstName = "First name is required";
+    } else if (formData.firstName.trim().length < 3) {
+      errors.firstName = "First name must be at least 3 characters";
+    } else if (formData.firstName.trim().length > 20) {
+      errors.firstName = "First name must be maximum 20 characters";
     }
-    // Phone validation (UAE format)
+
+    if (!formData.lastName.trim()) {
+      errors.lastName = "Last name is required";
+    } else if (formData.lastName.trim().length < 3) {
+      errors.lastName = "Last name must be at least 3 characters";
+    } else if (formData.lastName.trim().length > 20) {
+      errors.lastName = "Last name must be maximum 20 characters";
+    }
+
+    if (!formData.parentEmail.trim()) errors.parentEmail = "Email is required";
+    if (!formData.parentPhone.trim()) errors.parentPhone = "Phone is required";
+    if (!formData.parentAddress.trim())
+      errors.parentAddress = "Address is required";
+    if (!formData.startDate) errors.startDate = "Start date is required";
+    if (!selectedPlan) errors.plan = "Please select a plan";
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (formData.parentEmail && !emailRegex.test(formData.parentEmail)) {
+      errors.parentEmail = "Please enter a valid email address";
+    }
+
+    // UAE Phone validation
+    const uaePhoneRegex = /^(\+971|971|0)?[2-9][0-9]{8}$/;
     if (
       formData.parentPhone &&
-      !/^(\+971|0)?[2-9]\d{8}$/.test(formData.parentPhone)
+      !uaePhoneRegex.test(formData.parentPhone.replace(/\s/g, ""))
     ) {
-      newErrors.parentPhone = "Please enter a valid UAE phone number";
+      errors.parentPhone =
+        "Please enter a valid UAE phone number (e.g., 0501234567, +971501234567)";
     }
+
     // Children validation
-    formData.children.forEach((child, idx) => {
-      if (!child.name) newErrors[`childName_${idx}`] = "This field is required";
-      const age = parseInt(child.age);
-      if (isNaN(age) || age < 4 || age > 12) {
-        newErrors[`childAge_${idx}`] =
-          "Child must be between 4 and 12 years old";
-      }
-      if (!child.gender)
-        newErrors[`childGender_${idx}`] = "This field is required";
-    });
-    // Date validation (reuse existing logic)
-    if (formData.startDate) {
-      const startDate = new Date(formData.startDate);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      if (startDate < today) {
-        newErrors.startDate = "Start date cannot be in the past";
-      } else {
-        const dayOfWeek = startDate.getDay();
-        const currentYear = new Date().getFullYear();
-        if (selectedLocation === "abuDhabi") {
-          const abuDhabiStart = new Date(`${currentYear}-07-01`);
-          const abuDhabiEnd = new Date(`${currentYear}-08-21`);
-          if (startDate < abuDhabiStart || startDate > abuDhabiEnd) {
-            newErrors.startDate = `Camp in Abu Dhabi runs from July 1 to August 21, ${currentYear}`;
-          } else if (dayOfWeek === 0 || dayOfWeek === 6) {
-            newErrors.startDate = "Camp in Abu Dhabi runs Monday to Friday";
-          }
-        } else if (selectedLocation === "alAin") {
-          const alAinStart = new Date(`${currentYear}-07-05`);
-          const alAinEnd = new Date(`${currentYear}-08-19`);
-          if (startDate < alAinStart || startDate > alAinEnd) {
-            newErrors.startDate = `Camp in Al Ain runs from July 5 to August 19, ${currentYear}`;
-          } else if (dayOfWeek === 0 || dayOfWeek === 5 || dayOfWeek === 6) {
-            newErrors.startDate = "Camp in Al Ain runs Monday to Thursday";
-          }
-        }
-      }
+    if (formData.numberOfChildren < 1) {
+      errors.numberOfChildren = "At least one child is required";
     }
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    formData.children.forEach((child, index) => {
+      if (!child.name.trim()) {
+        errors[`child${index}Name`] = "Child name is required";
+      } else if (child.name.trim().length < 3) {
+        errors[`child${index}Name`] =
+          "Child name must be at least 3 characters";
+      } else if (child.name.trim().length > 20) {
+        errors[`child${index}Name`] =
+          "Child name must be maximum 20 characters";
+      }
+      if (!child.age || child.age < 1)
+        errors[`child${index}Age`] = "Valid age is required";
+      if (!child.gender) errors[`child${index}Gender`] = "Gender is required";
+    });
+
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleChildrenChange = (idx, field, value) => {
     const updated = [...formData.children];
     updated[idx][field] = value;
     setFormData({ ...formData, children: updated });
+
+    // Real-time validation for child names
+    if (field === "name") {
+      const newErrors = { ...errors };
+      if (!value.trim()) {
+        newErrors[`child${idx}Name`] = "Child name is required";
+      } else if (value.trim().length < 3) {
+        newErrors[`child${idx}Name`] =
+          "Child name must be at least 3 characters";
+      } else if (value.trim().length > 20) {
+        newErrors[`child${idx}Name`] =
+          "Child name must be maximum 20 characters";
+      } else {
+        delete newErrors[`child${idx}Name`];
+      }
+      setErrors(newErrors);
+    }
+  };
+
+  // Real-time validation for first name
+  const handleFirstNameChange = (value) => {
+    setFormData({ ...formData, firstName: value });
+    const newErrors = { ...errors };
+    if (!value.trim()) {
+      newErrors.firstName = "First name is required";
+    } else if (value.trim().length < 3) {
+      newErrors.firstName = "First name must be at least 3 characters";
+    } else if (value.trim().length > 20) {
+      newErrors.firstName = "First name must be maximum 20 characters";
+    } else {
+      delete newErrors.firstName;
+    }
+    setErrors(newErrors);
+  };
+
+  // Real-time validation for last name
+  const handleLastNameChange = (value) => {
+    setFormData({ ...formData, lastName: value });
+    const newErrors = { ...errors };
+    if (!value.trim()) {
+      newErrors.lastName = "Last name is required";
+    } else if (value.trim().length < 3) {
+      newErrors.lastName = "Last name must be at least 3 characters";
+    } else if (value.trim().length > 20) {
+      newErrors.lastName = "Last name must be maximum 20 characters";
+    } else {
+      delete newErrors.lastName;
+    }
+    setErrors(newErrors);
+  };
+
+  // Real-time validation for email
+  const handleEmailChange = (value) => {
+    setFormData({ ...formData, parentEmail: value });
+    const newErrors = { ...errors };
+    if (!value.trim()) {
+      newErrors.parentEmail = "Email is required";
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(value)) {
+        newErrors.parentEmail = "Please enter a valid email address";
+      } else {
+        delete newErrors.parentEmail;
+      }
+    }
+    setErrors(newErrors);
+  };
+
+  // Real-time validation for phone
+  const handlePhoneChange = (value) => {
+    setFormData({ ...formData, parentPhone: value });
+    const newErrors = { ...errors };
+    if (!value.trim()) {
+      newErrors.parentPhone = "Phone is required";
+    } else {
+      const uaePhoneRegex = /^(\+971|971|0)?[2-9][0-9]{8}$/;
+      if (!uaePhoneRegex.test(value.replace(/\s/g, ""))) {
+        newErrors.parentPhone =
+          "Please enter a valid UAE phone number (e.g., 0501234567, +971501234567)";
+      } else {
+        delete newErrors.parentPhone;
+      }
+    }
+    setErrors(newErrors);
   };
 
   const handleNumChildrenChange = (value) => {
@@ -207,59 +282,15 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
       selectedPlan,
       formData,
     });
-    if (validateForm()) {
-      // Ensure children data is properly formatted
-      const formattedChildren = formData.children.map((child) => ({
-        name: child.name,
-        age: parseInt(child.age),
-        gender: child.gender,
-      }));
 
-      const bookingData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        parentEmail: formData.parentEmail,
-        parentPhone: formData.parentPhone,
-        parentAddress: formData.parentAddress,
-        numberOfChildren: formData.numberOfChildren,
-        children: formattedChildren,
-        startDate: formData.startDate,
-        plan: selectedPlan,
-        location: selectedLocation,
-        pricing: {
-          finalTotal: finalTotal,
-        },
-      };
-
-      try {
-        // Save booking to database
-        console.log("Sending booking data:", bookingData);
-        const response = await axios.post("/api/bookings", bookingData);
-
-        if (response.status !== 201) {
-          throw new Error("Failed to save booking");
-        }
-
-        const result = response.data;
-        console.log("Booking saved successfully:", result.bookingId);
-
-        // Add the booking ID to the booking data
-        bookingData.bookingId = result.bookingId;
-
-        // Don't call onSubmit here as it closes the modal
-        // onSubmit(bookingData);
-        setShowPayment(true);
-      } catch (error) {
-        console.error("Error saving booking:", error);
-        console.error("Error response:", error.response?.data);
-        console.error("Error status:", error.response?.status);
-        alert(
-          `Failed to save booking: ${
-            error.response?.data?.message || error.message
-          }`
-        );
-      }
+    if (!validateForm()) {
+      toast.error("Please fix the errors in the form before submitting.");
+      return;
     }
+
+    // Don't save booking here - only save after successful payment
+    // Just proceed to payment
+    setShowPayment(true);
   };
 
   const handlePaymentSuccess = async (paymentResult) => {
@@ -298,26 +329,26 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
       }
 
       console.log("Booking saved successfully:", savedBookingResult.booking);
-      toast.info("Redirecting to consent form...");
+      toast.info("Redirecting to payment success page...");
 
       console.log(
-        "About to navigate to /parent-consent with booking data:",
+        "About to navigate to /payment-success with booking data:",
         savedBookingResult.booking
       );
 
       // Close the payment modal first
       setShowPayment(false);
 
-      // Navigate immediately without setTimeout
+      // Navigate to payment success page instead of directly to consent form
       try {
-        navigate("/parent-consent", {
+        navigate("/payment-success", {
           state: { booking: savedBookingResult.booking },
         });
-        console.log("Navigation initiated successfully");
+        console.log("Navigation to payment success initiated successfully");
       } catch (navError) {
         console.error("Navigation failed:", navError);
         // Fallback: use window.location
-        window.location.href = `/parent-consent?booking=${savedBookingResult.booking._id}`;
+        window.location.href = `/payment-success?booking=${savedBookingResult.booking._id}`;
       }
     } catch (error) {
       console.error("Error saving booking after payment:", error);
@@ -425,10 +456,9 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
                   <Label htmlFor="firstName">First Name</Label>
                   <Input
                     id="firstName"
+                    placeholder="3-20 characters"
                     value={formData.firstName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, firstName: e.target.value })
-                    }
+                    onChange={(e) => handleFirstNameChange(e.target.value)}
                   />
                   {errors.firstName && (
                     <p className="text-red-500 text-sm mt-1">
@@ -441,10 +471,9 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
                   <Label htmlFor="lastName">Last Name</Label>
                   <Input
                     id="lastName"
+                    placeholder="3-20 characters"
                     value={formData.lastName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, lastName: e.target.value })
-                    }
+                    onChange={(e) => handleLastNameChange(e.target.value)}
                   />
                   {errors.lastName && (
                     <p className="text-red-500 text-sm mt-1">
@@ -459,9 +488,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
                     id="parentEmail"
                     type="email"
                     value={formData.parentEmail}
-                    onChange={(e) =>
-                      setFormData({ ...formData, parentEmail: e.target.value })
-                    }
+                    onChange={(e) => handleEmailChange(e.target.value)}
                   />
                   {errors.parentEmail && (
                     <p className="text-red-500 text-sm mt-1">
@@ -475,10 +502,9 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
                   <Input
                     id="parentPhone"
                     type="tel"
+                    placeholder="e.g., 0501234567 or +971501234567"
                     value={formData.parentPhone}
-                    onChange={(e) =>
-                      setFormData({ ...formData, parentPhone: e.target.value })
-                    }
+                    onChange={(e) => handlePhoneChange(e.target.value)}
                   />
                   {errors.parentPhone && (
                     <p className="text-red-500 text-sm mt-1">
@@ -531,6 +557,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
                   </SelectContent>
                 </Select>
               </div>
+
               <div className="grid gap-6">
                 {formData.children.map((child, idx) => (
                   <div key={idx} className="p-4 border rounded-lg bg-gray-50">
@@ -540,6 +567,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, onClose }) => {
                         <Label htmlFor={`childName_${idx}`}>Full Name</Label>
                         <Input
                           id={`childName_${idx}`}
+                          placeholder="3-20 characters"
                           value={child.name}
                           onChange={(e) =>
                             handleChildrenChange(idx, "name", e.target.value)

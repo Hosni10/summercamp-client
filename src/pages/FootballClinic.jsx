@@ -27,39 +27,93 @@ import BookingForm from "../components/BookingForm.jsx";
 const clinicPlans = {
   abuDhabi: [
     {
-      name: "1-Day Access",
+      name: "1 Day Access",
       description: "Perfect for trying out our football clinic",
       price: "150",
       features: [
         "Professional coaching",
         "Skill assessment",
         "Training equipment provided",
-        "Certificate of participation",
       ],
     },
     {
-      name: "3-Days Access",
+      name: "1 Week (3 sessions)",
       description: "Comprehensive football training program",
-      price: "400",
+      price: "390",
       features: [
-        "All 1-day features",
+        "Professional coaching",
         "Advanced skill development",
         "Tactical training",
         "Progress tracking",
-        "Video analysis",
       ],
       popular: true,
     },
     {
-      name: "5-Days Access",
+      name: "Full Month (12 sessions)",
       description: "Complete football development experience",
-      price: "600",
+      price: "1440",
       features: [
-        "All 3-day features",
+        "Professional coaching",
         "Match play experience",
-        "Individual feedback",
+        "Progress tracking",
         "Performance report",
-        "Future training recommendations",
+      ],
+    },
+    {
+      name: "Full Camp Access (21 sessions)",
+      description: "Ultimate football training experience",
+      price: "2520",
+      features: [
+        "Professional coaching",
+        "Extended training period",
+        "Comprehensive skill development",
+        "Advanced tactical understanding",
+      ],
+    },
+  ],
+  alAin: [
+    {
+      name: "1 Day Access",
+      description: "Perfect for trying out our football clinic",
+      price: "150",
+      features: [
+        "Professional coaching",
+        "Skill assessment",
+        "Training equipment provided",
+      ],
+    },
+    {
+      name: "1 Week (3 sessions)",
+      description: "Comprehensive football training program",
+      price: "390",
+      features: [
+        "Professional coaching",
+        "Advanced skill development",
+        "Tactical training",
+        "Progress tracking",
+      ],
+      popular: true,
+    },
+    {
+      name: "Full Month (12 sessions)",
+      description: "Complete football development experience",
+      price: "1440",
+      features: [
+        "Professional coaching",
+        "Match play experience",
+        "Progress tracking",
+        "Performance report",
+      ],
+    },
+    {
+      name: "Full Camp Access (21 sessions)",
+      description: "Ultimate football training experience",
+      price: "2520",
+      features: [
+        "Professional coaching",
+        "Extended training period",
+        "Comprehensive skill development",
+        "Advanced tactical understanding",
       ],
     },
   ],
@@ -120,6 +174,7 @@ function ImageModal({ src, alt, open, onClose }) {
 function FootballClinic() {
   const [showBookingForm, setShowBookingForm] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState(null);
+  const [selectedLocation, setSelectedLocation] = useState("abuDhabi");
   const [modalImg, setModalImg] = useState(null);
 
   const handlePlanSelect = (plan) => {
@@ -131,6 +186,10 @@ function FootballClinic() {
     console.log("Booking submitted:", data);
     setShowBookingForm(false);
     // The BookingForm handles everything internally now
+  };
+
+  const getLocationName = (location) => {
+    return location === "abuDhabi" ? "Abu Dhabi" : "Al Ain";
   };
 
   return (
@@ -273,18 +332,46 @@ function FootballClinic() {
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Choose Your Plan
+              Choose Your Membership
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               Select the perfect training program for your football development
             </p>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {clinicPlans.abuDhabi.map((plan, index) => (
+          {/* Location Selection */}
+          <div className="flex justify-center mb-8">
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                  selectedLocation === "abuDhabi"
+                    ? "bg-[#ed3227] text-white"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+                onClick={() => setSelectedLocation("abuDhabi")}
+              >
+                <MapPin className="h-4 w-4 inline mr-2" />
+                Abu Dhabi
+              </button>
+              <button
+                className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                  selectedLocation === "alAin"
+                    ? "bg-[#ed3227] text-white"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+                onClick={() => setSelectedLocation("alAin")}
+              >
+                <MapPin className="h-4 w-4 inline mr-2" />
+                Al Ain
+              </button>
+            </div>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8">
+            {clinicPlans[selectedLocation].map((plan, index) => (
               <Card
                 key={index}
-                className={`relative overflow-hidden ${
+                className={`relative overflow-hidden flex flex-col ${
                   plan.popular
                     ? "border-2 border-[#ed3227] shadow-lg"
                     : "hover:shadow-lg"
@@ -298,26 +385,26 @@ function FootballClinic() {
                   </div>
                 )}
                 <CardHeader>
-                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                  <CardTitle className="text-xl">{plan.name}</CardTitle>
                   <CardDescription>{plan.description}</CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex-1 flex flex-col">
                   <div className="mb-6">
-                    <span className="text-4xl font-bold">AED {plan.price}</span>
+                    <span className="text-3xl font-bold">AED {plan.price}</span>
                   </div>
-                  <ul className="space-y-3 mb-6">
+                  <ul className="space-y-3 mb-6 flex-1">
                     {plan.features.map((feature, index) => (
                       <li key={index} className="flex items-start">
-                        <Check className="h-5 w-5 mr-2 text-[#ed3227] mt-1" />
-                        {feature}
+                        <Check className="h-4 w-4 mr-2 text-[#ed3227] mt-1 flex-shrink-0" />
+                        <span className="text-sm">{feature}</span>
                       </li>
                     ))}
                   </ul>
                   <Button
-                    className="w-full bg-[#ed3227] hover:bg-[#ed3227]/90 text-white"
+                    className="w-full bg-[#ed3227] hover:bg-[#ed3227]/90 text-white mt-auto"
                     onClick={() => handlePlanSelect(plan)}
                   >
-                    Select Plan
+                    Select Membership
                   </Button>
                 </CardContent>
               </Card>
@@ -330,7 +417,7 @@ function FootballClinic() {
       {showBookingForm && selectedPlan && (
         <BookingForm
           selectedPlan={selectedPlan}
-          selectedLocation="abuDhabi"
+          selectedLocation={selectedLocation}
           onClose={() => setShowBookingForm(false)}
         />
       )}
