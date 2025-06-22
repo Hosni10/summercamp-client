@@ -138,12 +138,23 @@ export default function ParentConsentForm() {
 
     try {
       console.log("Submitting consent form data:", data);
+      console.log(
+        "API URL:",
+        `${
+          import.meta.env.VITE_SERVER_URL || "http://localhost:5000"
+        }/api/consent-forms`
+      );
 
-      const response = await fetch("http://localhost:5000/api/consent-forms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_SERVER_URL || "http://localhost:5000"
+        }/api/consent-forms`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(data),
+        }
+      );
 
       const result = await response.json();
 
