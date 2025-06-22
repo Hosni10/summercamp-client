@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Button } from "../components/ui/button.jsx";
 import {
   Card,
@@ -17,6 +17,10 @@ import {
   Clock,
   Calendar,
   X,
+  ArrowRight,
+  Target,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import heroImage from "../assets/hero-sports-camp.jpg";
 import activitiesImage from "../assets/activities.jpeg";
@@ -24,7 +28,10 @@ import entertainmentImage from "../assets/entertainment.jpeg";
 import detailsImage from "../assets/details.jpeg";
 import lastYearImage from "../assets/last-year.jpeg";
 import fullImage from "../assets/kids-camp.jpeg";
+import coachImage from "../assets/coach.jpeg";
+import backgroundImage from "../assets/background.jpeg";
 import BookingForm from "../components/BookingForm.jsx";
+import { useNavigate } from "react-router-dom";
 
 const campPlans = {
   abuDhabi: [
@@ -144,6 +151,52 @@ function KidsCamp() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [selectedLocation, setSelectedLocation] = useState("abuDhabi");
   const [modalImg, setModalImg] = useState(null);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const navigate = useNavigate();
+
+  const slides = [
+    {
+      image: fullImage,
+      title: "Kids Camp",
+      subtitle: "Where Champions Are Made",
+      description:
+        "Join our comprehensive summer program designed to develop young talents through sports, education, and fun activities.",
+      badge: "Summer 2025 Registration Open",
+      buttonText: "Book Now",
+      buttonAction: "book",
+    },
+    {
+      image: coachImage,
+      title: "Football Clinic",
+      subtitle: "Professional Football Training",
+      description:
+        "Specialized football training for all skill levels. Professional coaching, tactical training, and match play experience.",
+      badge: "Professional Coaching",
+      buttonText: "View Football Clinic",
+      buttonAction: "football",
+    },
+  ];
+
+  // Auto-slide functionality
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 7000); // Change slide every 7 seconds
+
+    return () => clearInterval(interval);
+  }, [slides.length]);
+
+  const nextSlide = () => {
+    setCurrentSlide((prev) => (prev + 1) % slides.length);
+  };
+
+  const prevSlide = () => {
+    setCurrentSlide((prev) => (prev - 1 + slides.length) % slides.length);
+  };
+
+  const goToSlide = (index) => {
+    setCurrentSlide(index);
+  };
 
   const handlePlanSelect = (plan) => {
     setSelectedPlan(plan);
@@ -160,43 +213,97 @@ function KidsCamp() {
     return "Abu Dhabi";
   };
 
+  const handleFootballClinicClick = () => {
+    navigate("/football-clinic");
+  };
+
+  const handleBookNowClick = () => {
+    document.getElementById("pricing").scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleSlideButtonClick = () => {
+    const currentSlideData = slides[currentSlide];
+    if (currentSlideData.buttonAction === "football") {
+      handleFootballClinicClick();
+    } else {
+      handleBookNowClick();
+    }
+  };
+
   return (
     <>
-      {/* Hero Section */}
-      <section className="relative py-20 px-4 sm:px-6 lg:px-8 overflow-hidden">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-          style={{ backgroundImage: `url(${fullImage})` }}
-        >
-          <div className="absolute inset-0 bg-gradient-to-r from-black/80 to-[#ed3227]/60"></div>
+      {/* Hero Carousel Section */}
+      <section className="relative h-screen overflow-hidden">
+        {/* Slides */}
+        {slides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1000 ${
+              index === currentSlide ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <div
+              className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+              style={{ backgroundImage: `url(${slide.image})` }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-r from-black/70 to-[#ed3227]/50"></div>
+            </div>
+          </div>
+        ))}
+
+        {/* Content */}
+        <div className="relative h-full flex items-center justify-center px-4 sm:px-6 lg:px-8">
+          <div className="max-w-7xl mx-auto text-center text-white">
+            <div className="mb-8">
+              <Badge className="mb-4 bg-[#ed3227] text-white hover:bg-[#ed3227]/90">
+                {slides[currentSlide].badge}
+              </Badge>
+              <h1 className="text-4xl md:text-6xl font-bold mb-6">
+                {slides[currentSlide].title}
+                <span className="block text-[#ed3227]">
+                  {slides[currentSlide].subtitle}
+                </span>
+              </h1>
+              <p className="text-xl mb-8 max-w-3xl mx-auto">
+                {slides[currentSlide].description}
+              </p>
+              <Button
+                className="bg-[#ed3227] hover:bg-[#ed3227]/90 text-white px-8 py-6 text-lg"
+                onClick={handleSlideButtonClick}
+              >
+                {slides[currentSlide].buttonText}
+              </Button>
+            </div>
+          </div>
         </div>
 
-        <div className="relative max-w-7xl mx-auto text-center text-white">
-          <div className="mb-8">
-            <Badge className="mb-4 bg-[#ed3227] text-white hover:bg-[#ed3227]/90">
-              Summer 2025 Registration Open
-            </Badge>
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Kids Camp
-              <span className="block text-[#ed3227]">
-                Where Champions Are Made
-              </span>
-            </h1>
-            <p className="text-xl mb-8 max-w-3xl mx-auto">
-              Join our comprehensive summer program designed to develop young
-              talents through sports, education, and fun activities.
-            </p>
-            <Button
-              className="bg-[#ed3227] hover:bg-[#ed3227]/90 text-white px-8 py-6 text-lg"
-              onClick={() =>
-                document
-                  .getElementById("pricing")
-                  .scrollIntoView({ behavior: "smooth" })
-              }
-            >
-              Book Now
-            </Button>
-          </div>
+        {/* Navigation Arrows */}
+        <button
+          onClick={prevSlide}
+          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full transition-colors"
+        >
+          <ChevronLeft className="h-6 w-6" />
+        </button>
+        <button
+          onClick={nextSlide}
+          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full transition-colors"
+        >
+          <ChevronRight className="h-6 w-6" />
+        </button>
+
+        {/* Dots Navigation */}
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`w-3 h-3 rounded-full transition-colors ${
+                index === currentSlide
+                  ? "bg-[#ed3227]"
+                  : "bg-white/50 hover:bg-white/75"
+              }`}
+            />
+          ))}
         </div>
       </section>
 
