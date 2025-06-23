@@ -10,37 +10,33 @@ const initialForm = {
   dob: "",
   gender: "",
   address: "",
-  language: "",
-  // Parent Guardian Details
-  parent1Name: "",
-  parent1Relation: "",
-  parent1Phone: "",
-  parent1Email: "",
-  parent2Name: "",
-  parent2Phone: "",
+  // Parent Guardian Details (simplified to 1 parent)
+  parentName: "",
+  parentPhone: "",
+  parentEmail: "",
   // Emergency Contact
   emergencyName: "",
   emergencyRelation: "",
   emergencyPhone1: "",
   emergencyPhone2: "",
-  // Pick Up & Drop
-  pickupList: "",
-  pickupName1: "",
-  pickupNumber1: "",
-  pickupName2: "",
-  pickupNumber2: "",
-  // Medical Questionnaire
-  medQ1: "",
-  medQ2: "",
-  medQ3: "",
-  medQ4: "",
-  medQ5: "",
-  medQ6: "",
-  medQ7: "",
-  medQ8: "",
-  // Medical Details
+  // Pick Up & Drop (simplified to 1 person)
+  pickupName: "",
+  pickupNumber: "",
+  // Medical Questionnaire (default to "No")
+  medQ1: "No",
+  medQ2: "No",
+  medQ3: "No",
+  medQ4: "No",
+  medQ5: "No",
+  medQ6: "No",
+  medQ7: "No",
+  medQ8: "No",
+  // Medical Details (conditional fields)
+  hasHealthInfo: "No",
   healthInfo: "",
+  hasMedications: "No",
   medications: "",
+  hasHealthConcerns: "No",
   healthConcerns: "",
   // Declaration
   guardianName: "",
@@ -57,137 +53,247 @@ const medQuestions = [
   "Do you know of any other reason why you should not do physical activity/ exercise?",
 ];
 
-export default function ParentConsentForm() {
-  const [form, setForm] = useState(initialForm);
-  const [errors, setErrors] = useState({});
-  const [submitting, setSubmitting] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const guardianSigRef = useRef();
+const ParentConsentForm = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [booking, setBooking] = useState(null);
+  const [form, setForm] = useState(initialForm);
+  const [errors, setErrors] = useState({});
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const signaturePadRef = useRef(null);
 
+  // Auto-fill form with booking data if available
   useEffect(() => {
-    console.log("ParentConsentForm mounted");
     console.log("Location state:", location.state);
-    console.log("Location pathname:", location.pathname);
 
-    if (location.state && location.state.booking) {
-      console.log("Setting booking data:", location.state.booking);
-      setBooking(location.state.booking);
-      setLoading(false);
+    // Check for booking data in different possible locations
+    const bookingData = location.state?.booking || location.state?.bookingData;
+
+    if (bookingData) {
+      console.log("Found booking data:", bookingData);
+      const child = bookingData.children?.[0]; // Use first child for consent form
+
+      console.log("Child data:", child);
+      console.log("Child dateOfBirth:", child?.dateOfBirth);
+
+      setForm((prevForm) => ({
+        ...prevForm,
+        // Auto-fill kid details from booking
+        kidFullName: child?.name || "",
+        dob: child?.dateOfBirth || "",
+        gender: child?.gender || "",
+        address: bookingData.parentAddress || "",
+        // Auto-fill parent details from booking
+        parentName: `${bookingData.firstName} ${bookingData.lastName}`,
+        parentPhone: bookingData.parentPhone || "",
+        parentEmail: bookingData.parentEmail || "",
+        // Auto-fill guardian name
+        guardianName: `${bookingData.firstName} ${bookingData.lastName}`,
+      }));
     } else {
       console.log("No booking data found in location state");
-      setLoading(false);
-      toast.error("No booking data found. Please go back and try again.");
     }
   }, [location.state]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    // Clear error when user starts typing
+    if (errors[name]) {
+      setErrors((prev) => ({
+        ...prev,
+        [name]: "",
+      }));
+    }
   };
 
   const handleRadio = (name, value) => {
     setForm({ ...form, [name]: value });
   };
 
+  // Handle medical questionnaire changes
+  const handleMedicalChange = (fieldName, value) => {
+    setForm((prev) => ({
+      ...prev,
+      [fieldName]: value,
+    }));
+
+    // Clear error when user makes selection
+    if (errors[fieldName]) {
+      setErrors((prev) => ({
+        ...prev,
+        [fieldName]: "",
+      }));
+    }
+  };
+
   const validate = () => {
-    const newErrors = {};
-    Object.entries(initialForm).forEach(([key, val]) => {
-      if (!form[key]) newErrors[key] = "Required";
-    });
-    if (guardianSigRef.current.isEmpty())
-      newErrors.guardianSig = "Signature required";
-    console.log(newErrors, "newErrors");
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+    const errors = {};
+
+    // Kids Details
+    if (!form.kidFullName.trim())
+      errors.kidFullName = "Kid full name is required";
+    if (!form.dob) errors.dob = "Date of birth is required";
+    if (!form.gender) errors.gender = "Gender is required";
+    if (!form.address.trim()) errors.address = "Address is required";
+
+    // Parent Guardian Details
+    if (!form.parentName.trim()) errors.parentName = "Parent name is required";
+    if (!form.parentPhone.trim())
+      errors.parentPhone = "Parent phone is required";
+    if (!form.parentEmail.trim())
+      errors.parentEmail = "Parent email is required";
+
+    // Emergency Contact
+    if (!form.emergencyName.trim())
+      errors.emergencyName = "Emergency contact name is required";
+    if (!form.emergencyRelation.trim())
+      errors.emergencyRelation = "Emergency contact relation is required";
+    if (!form.emergencyPhone1.trim())
+      errors.emergencyPhone1 = "Emergency phone 1 is required";
+    if (!form.emergencyPhone2.trim())
+      errors.emergencyPhone2 = "Emergency phone 2 is required";
+
+    // Pick Up & Drop
+    if (!form.pickupName.trim()) errors.pickupName = "Pickup name is required";
+    if (!form.pickupNumber.trim())
+      errors.pickupNumber = "Pickup number is required";
+
+    // Medical Questionnaire
+    for (let i = 1; i <= 8; i++) {
+      if (!form[`medQ${i}`])
+        errors[`medQ${i}`] = `Medical question ${i} is required`;
+    }
+
+    // Medical Details
+    if (!form.hasHealthInfo)
+      errors.hasHealthInfo = "Health info question is required";
+    if (form.hasHealthInfo === "Yes" && !form.healthInfo.trim()) {
+      errors.healthInfo = "Health information is required when Yes is selected";
+    }
+    if (!form.hasMedications)
+      errors.hasMedications = "Medications question is required";
+    if (form.hasMedications === "Yes" && !form.medications.trim()) {
+      errors.medications = "Medications list is required when Yes is selected";
+    }
+    if (!form.hasHealthConcerns)
+      errors.hasHealthConcerns = "Health concerns question is required";
+    if (form.hasHealthConcerns === "Yes" && !form.healthConcerns.trim()) {
+      errors.healthConcerns =
+        "Health concerns details are required when Yes is selected";
+    }
+
+    // Declaration
+    if (!form.guardianName.trim())
+      errors.guardianName = "Guardian name is required";
+    if (signaturePadRef.current?.isEmpty()) {
+      errors.guardianSig = "Guardian signature is required";
+    }
+
+    setErrors(errors);
+    return Object.keys(errors).length === 0;
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(booking, "submit consent form");
     if (!validate()) return;
-    setSubmitting(true);
 
-    if (!booking) {
-      toast.error("Booking information is missing.");
-      setSubmitting(false);
-      return;
-    }
-
-    // Prepare data (including signature as base64)
-    let signatureData = "";
+    setIsSubmitting(true);
     try {
-      if (guardianSigRef.current && !guardianSigRef.current.isEmpty()) {
-        signatureData = guardianSigRef.current
-          .getCanvas()
-          .toDataURL("image/png");
+      let signatureData = "";
+
+      // Safely get signature data
+      try {
+        if (signaturePadRef.current && !signaturePadRef.current.isEmpty()) {
+          signatureData = signaturePadRef.current.getCanvas().toDataURL();
+        }
+      } catch (signatureError) {
+        console.error("Error getting signature:", signatureError);
+        toast.error("Error processing signature. Please try again.");
+        setIsSubmitting(false);
+        return;
       }
-    } catch (error) {
-      console.error("Error getting signature:", error);
-      toast.error("Error processing signature. Please try again.");
-      setSubmitting(false);
-      return;
-    }
 
-    const data = {
-      ...form,
-      guardianSignature: signatureData,
-      parentBooking: booking._id,
-    };
+      // Get booking data from location state
+      const bookingData =
+        location.state?.booking || location.state?.bookingData;
 
-    try {
-      console.log("Submitting consent form data:", data);
+      const formData = {
+        parentBooking: bookingData?._id,
+        // Kids Details
+        kidFullName: form.kidFullName,
+        dob: form.dob,
+        gender: form.gender,
+        address: form.address,
+        // Parent Guardian Details
+        parentName: form.parentName,
+        parentPhone: form.parentPhone,
+        parentEmail: form.parentEmail,
+        // Emergency Contact
+        emergencyName: form.emergencyName,
+        emergencyRelation: form.emergencyRelation,
+        emergencyPhone1: form.emergencyPhone1,
+        emergencyPhone2: form.emergencyPhone2,
+        // Pick Up & Drop
+        pickupName: form.pickupName,
+        pickupNumber: form.pickupNumber,
+        // Medical Questionnaire
+        medQ1: form.medQ1,
+        medQ2: form.medQ2,
+        medQ3: form.medQ3,
+        medQ4: form.medQ4,
+        medQ5: form.medQ5,
+        medQ6: form.medQ6,
+        medQ7: form.medQ7,
+        medQ8: form.medQ8,
+        // Medical Details
+        hasHealthInfo: form.hasHealthInfo,
+        healthInfo: form.hasHealthInfo === "Yes" ? form.healthInfo : "",
+        hasMedications: form.hasMedications,
+        medications: form.hasMedications === "Yes" ? form.medications : "",
+        hasHealthConcerns: form.hasHealthConcerns,
+        healthConcerns:
+          form.hasHealthConcerns === "Yes" ? form.healthConcerns : "",
+        // Declaration
+        guardianName: form.guardianName,
+        guardianSignature: signatureData,
+      };
 
-      const response = await fetch("http://localhost:5000/api/consent-forms", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
-      });
+      console.log("Submitting form data:", formData);
+
+      const response = await fetch(
+        `${
+          import.meta.env.VITE_SERVER_URL || "http://localhost:5000"
+        }/api/consent-forms`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const result = await response.json();
+      console.log("📡 Response result:", result);
 
-      if (result.success) {
+      if (response.ok && result.success) {
         toast.success("Consent form submitted successfully!");
-        console.log("Consent form saved:", result.form);
-        setTimeout(() => navigate("/"), 2000);
+        // Add delay so user can see the success toast
+        setTimeout(() => {
+          navigate("/");
+        }, 4000); // 2 second delay
       } else {
-        toast.error(`Submission failed: ${result.message}`);
-        console.error("Consent form submission failed:", result);
+        toast.error(result.message || "Failed to submit consent form");
       }
     } catch (error) {
-      toast.error("An error occurred while submitting the form.");
       console.error("Error submitting consent form:", error);
+      toast.error("An error occurred while submitting the form");
     } finally {
-      setSubmitting(false);
+      setIsSubmitting(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Toaster richColors />
-        <p>Loading booking details...</p>
-      </div>
-    );
-  }
-
-  if (!booking) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <Toaster richColors />
-        <div className="text-center">
-          <p className="text-red-600 mb-4">No booking data found.</p>
-          <Button
-            onClick={() => navigate("/")}
-            className="bg-red-600 hover:bg-red-700"
-          >
-            Go Back to Home
-          </Button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-lg my-8">
@@ -195,6 +301,16 @@ export default function ParentConsentForm() {
       <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
         Kids Registration, Consent & Health Declaration Form
       </h1>
+
+      {!location.state?.booking && !location.state?.bookingData && (
+        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+          <p className="text-yellow-800 text-sm">
+            <strong>Note:</strong> No booking data found. Please fill in all
+            fields manually or go back to complete a booking first.
+          </p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Kids Details */}
         <section className="bg-gray-50 p-6 rounded-lg border border-gray-200">
@@ -273,23 +389,6 @@ export default function ParentConsentForm() {
                 </span>
               )}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Preferred Language *
-              </label>
-              <input
-                name="language"
-                value={form.language}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="e.g., English, Arabic"
-              />
-              {errors.language && (
-                <span className="text-red-500 text-sm mt-1 block">
-                  {errors.language}
-                </span>
-              )}
-            </div>
           </div>
         </section>
 
@@ -304,32 +403,15 @@ export default function ParentConsentForm() {
                 1st Parent Guardian Full Name *
               </label>
               <input
-                name="parent1Name"
-                value={form.parent1Name}
+                name="parentName"
+                value={form.parentName}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="Enter full name"
               />
-              {errors.parent1Name && (
+              {errors.parentName && (
                 <span className="text-red-500 text-sm mt-1 block">
-                  {errors.parent1Name}
-                </span>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Relationship *
-              </label>
-              <input
-                name="parent1Relation"
-                value={form.parent1Relation}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="e.g., Father, Mother, Guardian"
-              />
-              {errors.parent1Relation && (
-                <span className="text-red-500 text-sm mt-1 block">
-                  {errors.parent1Relation}
+                  {errors.parentName}
                 </span>
               )}
             </div>
@@ -338,15 +420,15 @@ export default function ParentConsentForm() {
                 Phone Number *
               </label>
               <input
-                name="parent1Phone"
-                value={form.parent1Phone}
+                name="parentPhone"
+                value={form.parentPhone}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="Enter phone number"
               />
-              {errors.parent1Phone && (
+              {errors.parentPhone && (
                 <span className="text-red-500 text-sm mt-1 block">
-                  {errors.parent1Phone}
+                  {errors.parentPhone}
                 </span>
               )}
             </div>
@@ -355,50 +437,16 @@ export default function ParentConsentForm() {
                 Email Address *
               </label>
               <input
-                name="parent1Email"
+                name="parentEmail"
                 type="email"
-                value={form.parent1Email}
+                value={form.parentEmail}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="Enter email address"
               />
-              {errors.parent1Email && (
+              {errors.parentEmail && (
                 <span className="text-red-500 text-sm mt-1 block">
-                  {errors.parent1Email}
-                </span>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                2nd Parent Guardian Full Name *
-              </label>
-              <input
-                name="parent2Name"
-                value={form.parent2Name}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="Enter full name"
-              />
-              {errors.parent2Name && (
-                <span className="text-red-500 text-sm mt-1 block">
-                  {errors.parent2Name}
-                </span>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                2nd Parent Guardian Phone Number *
-              </label>
-              <input
-                name="parent2Phone"
-                value={form.parent2Phone}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="Enter phone number"
-              />
-              {errors.parent2Phone && (
-                <span className="text-red-500 text-sm mt-1 block">
-                  {errors.parent2Phone}
+                  {errors.parentEmail}
                 </span>
               )}
             </div>
@@ -492,84 +540,33 @@ export default function ParentConsentForm() {
               List of individuals authorized to pick up your child *
             </label>
             <input
-              name="pickupList"
-              value={form.pickupList}
+              name="pickupName"
+              value={form.pickupName}
               onChange={handleChange}
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
               placeholder="List all authorized individuals"
             />
-            {errors.pickupList && (
+            {errors.pickupName && (
               <span className="text-red-500 text-sm mt-1 block">
-                {errors.pickupList}
+                {errors.pickupName}
               </span>
             )}
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Name 1 *
-              </label>
-              <input
-                name="pickupName1"
-                value={form.pickupName1}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="Enter first authorized person's name"
-              />
-              {errors.pickupName1 && (
-                <span className="text-red-500 text-sm mt-1 block">
-                  {errors.pickupName1}
-                </span>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
                 Number *
               </label>
               <input
-                name="pickupNumber1"
-                value={form.pickupNumber1}
+                name="pickupNumber"
+                value={form.pickupNumber}
                 onChange={handleChange}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
                 placeholder="Enter phone number"
               />
-              {errors.pickupNumber1 && (
+              {errors.pickupNumber && (
                 <span className="text-red-500 text-sm mt-1 block">
-                  {errors.pickupNumber1}
-                </span>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Name 2 *
-              </label>
-              <input
-                name="pickupName2"
-                value={form.pickupName2}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="Enter second authorized person's name"
-              />
-              {errors.pickupName2 && (
-                <span className="text-red-500 text-sm mt-1 block">
-                  {errors.pickupName2}
-                </span>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Number *
-              </label>
-              <input
-                name="pickupNumber2"
-                value={form.pickupNumber2}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                placeholder="Enter phone number"
-              />
-              {errors.pickupNumber2 && (
-                <span className="text-red-500 text-sm mt-1 block">
-                  {errors.pickupNumber2}
+                  {errors.pickupNumber}
                 </span>
               )}
             </div>
@@ -597,7 +594,9 @@ export default function ParentConsentForm() {
                       name={`medQ${i + 1}`}
                       value="Yes"
                       checked={form[`medQ${i + 1}`] === "Yes"}
-                      onChange={() => handleRadio(`medQ${i + 1}`, "Yes")}
+                      onChange={() =>
+                        handleMedicalChange(`medQ${i + 1}`, "Yes")
+                      }
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">Yes</span>
@@ -608,7 +607,7 @@ export default function ParentConsentForm() {
                       name={`medQ${i + 1}`}
                       value="No"
                       checked={form[`medQ${i + 1}`] === "No"}
-                      onChange={() => handleRadio(`medQ${i + 1}`, "No")}
+                      onChange={() => handleMedicalChange(`medQ${i + 1}`, "No")}
                       className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
                     />
                     <span className="ml-2 text-sm text-gray-700">No</span>
@@ -629,58 +628,141 @@ export default function ParentConsentForm() {
           <h2 className="font-bold text-xl mb-4 text-gray-800 border-b border-gray-300 pb-2">
             Medical Details
           </h2>
-          <div className="space-y-4">
+          <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Describe any other important health-related information about
-                you *
+                Do you have any other important health-related information? *
               </label>
-              <textarea
-                name="healthInfo"
-                value={form.healthInfo}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                rows={3}
-                placeholder="Describe any health conditions, allergies, or important medical information"
-              />
+              <div className="flex gap-4 mb-3">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="hasHealthInfo"
+                    value="Yes"
+                    checked={form.hasHealthInfo === "Yes"}
+                    onChange={() => handleMedicalChange("hasHealthInfo", "Yes")}
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Yes</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="hasHealthInfo"
+                    value="No"
+                    checked={form.hasHealthInfo === "No"}
+                    onChange={() => handleMedicalChange("hasHealthInfo", "No")}
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">No</span>
+                </label>
+              </div>
+              {form.hasHealthInfo === "Yes" && (
+                <textarea
+                  name="healthInfo"
+                  value={form.healthInfo}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  rows={3}
+                  placeholder="Describe any health conditions, allergies, or important medical information"
+                />
+              )}
               {errors.healthInfo && (
                 <span className="text-red-500 text-sm mt-1 block">
                   {errors.healthInfo}
                 </span>
               )}
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                List all prescriptions and over-the-counter medications you are
-                currently taking *
+                Are you currently taking any medications? *
               </label>
-              <textarea
-                name="medications"
-                value={form.medications}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                rows={2}
-                placeholder="List all current medications"
-              />
+              <div className="flex gap-4 mb-3">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="hasMedications"
+                    value="Yes"
+                    checked={form.hasMedications === "Yes"}
+                    onChange={() =>
+                      handleMedicalChange("hasMedications", "Yes")
+                    }
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Yes</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="hasMedications"
+                    value="No"
+                    checked={form.hasMedications === "No"}
+                    onChange={() => handleMedicalChange("hasMedications", "No")}
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">No</span>
+                </label>
+              </div>
+              {form.hasMedications === "Yes" && (
+                <textarea
+                  name="medications"
+                  value={form.medications}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  rows={2}
+                  placeholder="List all current medications"
+                />
+              )}
               {errors.medications && (
                 <span className="text-red-500 text-sm mt-1 block">
                   {errors.medications}
                 </span>
               )}
             </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Do you have any immediate health concerns that you think may
-                affect your performance? Please specify *
+                Do you have any immediate health concerns? *
               </label>
-              <textarea
-                name="healthConcerns"
-                value={form.healthConcerns}
-                onChange={handleChange}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                rows={2}
-                placeholder="Describe any immediate health concerns"
-              />
+              <div className="flex gap-4 mb-3">
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="hasHealthConcerns"
+                    value="Yes"
+                    checked={form.hasHealthConcerns === "Yes"}
+                    onChange={() =>
+                      handleMedicalChange("hasHealthConcerns", "Yes")
+                    }
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">Yes</span>
+                </label>
+                <label className="flex items-center">
+                  <input
+                    type="radio"
+                    name="hasHealthConcerns"
+                    value="No"
+                    checked={form.hasHealthConcerns === "No"}
+                    onChange={() =>
+                      handleMedicalChange("hasHealthConcerns", "No")
+                    }
+                    className="w-4 h-4 text-blue-600 border-gray-300 focus:ring-blue-500"
+                  />
+                  <span className="ml-2 text-sm text-gray-700">No</span>
+                </label>
+              </div>
+              {form.hasHealthConcerns === "Yes" && (
+                <textarea
+                  name="healthConcerns"
+                  value={form.healthConcerns}
+                  onChange={handleChange}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                  rows={2}
+                  placeholder="Describe any immediate health concerns"
+                />
+              )}
               {errors.healthConcerns && (
                 <span className="text-red-500 text-sm mt-1 block">
                   {errors.healthConcerns}
@@ -761,7 +843,7 @@ export default function ParentConsentForm() {
               />
               <div className="border-2 border-gray-300 rounded-lg p-2 bg-white">
                 <SignaturePad
-                  ref={guardianSigRef}
+                  ref={signaturePadRef}
                   penColor="#ed3227"
                   canvasProps={{
                     width: 300,
@@ -783,15 +865,17 @@ export default function ParentConsentForm() {
           <Button
             type="submit"
             className="bg-[#ed3227] hover:bg-[#d42a1f] text-white px-8 py-3 text-lg rounded-lg transition-colors"
-            disabled={submitting}
+            disabled={isSubmitting}
           >
-            {submitting ? "Submitting..." : "Submit Form"}
+            {isSubmitting ? "Submitting..." : "Submit Form"}
           </Button>
         </div>
       </form>
     </div>
   );
-}
+};
+
+export default ParentConsentForm;
 
 // Add this to your routes: <Route path="/parent-consent" element={<ParentConsentForm />} />
 // And install react-signature-canvas: npm install react-signature-canvas

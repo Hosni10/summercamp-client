@@ -27,6 +27,17 @@ import BookingForm from "../components/BookingForm.jsx";
 const clinicPlans = {
   abuDhabi: [
     {
+      name: "Test Plan",
+      description: "Try our football clinic for just 0.5 dirham",
+      price: "2",
+      features: [
+        "Professional coaching",
+        "Skill assessment",
+        "Training equipment provided",
+        "Perfect for first-time visitors",
+      ],
+    },
+    {
       name: "1 Day Access",
       description: "Perfect for trying out our football clinic",
       price: "150",
@@ -60,7 +71,7 @@ const clinicPlans = {
       ],
     },
     {
-      name: "Full Camp Access (21 sessions)",
+      name: "Full Access (21 sessions)",
       description: "Ultimate football training experience",
       price: "2520",
       features: [
@@ -106,7 +117,7 @@ const clinicPlans = {
       ],
     },
     {
-      name: "Full Camp Access (21 sessions)",
+      name: "Full Access (21 sessions)",
       description: "Ultimate football training experience",
       price: "2520",
       features: [

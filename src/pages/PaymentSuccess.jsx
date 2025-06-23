@@ -38,21 +38,44 @@ export default function PaymentSuccess() {
     if (
       planNameLower.includes("football") ||
       planNameLower.includes("clinic") ||
-      planNameLower.includes("session")
+      planNameLower.includes("session") ||
+      planNameLower.includes("membership") ||
+      planNameLower.includes("training") ||
+      planNameLower.includes("week") ||
+      planNameLower.includes("month") ||
+      planNameLower.includes("test plan") ||
+      planNameLower.includes("1 day access") ||
+      planNameLower.includes("3 sessions") ||
+      planNameLower.includes("12 sessions") ||
+      planNameLower.includes("21 sessions") ||
+      planNameLower.includes("full camp access") ||
+      planNameLower.includes("full month")
     ) {
       return "Football Clinic";
     }
 
     // Check for Kids Camp indicators
     if (
-      planNameLower.includes("day") ||
-      planNameLower.includes("access") ||
-      planNameLower.includes("camp")
+      planNameLower.includes("kids camp") ||
+      planNameLower.includes("kids") ||
+      (planNameLower.includes("day") &&
+        !planNameLower.includes("week") &&
+        !planNameLower.includes("month") &&
+        !planNameLower.includes("access")) ||
+      (planNameLower.includes("camp") &&
+        !planNameLower.includes("clinic") &&
+        !planNameLower.includes("access"))
     ) {
       return "Kids Camp";
     }
 
-    // Default fallback
+    // Default fallback based on the page context
+    if (location.state?.fromPage === "football-clinic") {
+      console.log("✅ Fallback: Football Clinic (from page context)");
+      return "Football Clinic";
+    }
+
+    console.log("✅ Fallback: Kids Camp (default)");
     return "Kids Camp";
   };
 

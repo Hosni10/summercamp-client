@@ -5,6 +5,8 @@ import KidsCamp from "./pages/KidsCamp.jsx";
 import FootballClinic from "./pages/FootballClinic.jsx";
 import ParentConsentForm from "./pages/ParentConsentForm.jsx";
 import PaymentSuccess from "./pages/PaymentSuccess.jsx";
+import PaymentError from "./pages/PaymentError.jsx";
+import NotFound from "./pages/NotFound.jsx";
 import "./App.css";
 
 function App() {
@@ -37,6 +39,8 @@ function App() {
         />
         <Route path="/parent-consent" element={<ParentConsentForm />} />
         <Route path="/payment-success" element={<PaymentSuccess />} />
+        <Route path="/payment-error" element={<PaymentError />} />
+        <Route path="*" element={<NotFound />} />
       </Routes>
     </Router>
   );
