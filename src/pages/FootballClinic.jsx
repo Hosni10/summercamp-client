@@ -71,7 +71,7 @@ const clinicPlans = {
       ],
     },
     {
-      name: "Full Camp Access (21 sessions)",
+      name: "Full Access (21 sessions)",
       description: "Ultimate football training experience",
       price: "2520",
       features: [
@@ -117,7 +117,7 @@ const clinicPlans = {
       ],
     },
     {
-      name: "Full Camp Access (21 sessions)",
+      name: "Full Access (21 sessions)",
       description: "Ultimate football training experience",
       price: "2520",
       features: [

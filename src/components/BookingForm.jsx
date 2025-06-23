@@ -322,7 +322,9 @@ const BookingForm = ({ selectedPlan, onClose }) => {
     });
 
     if (!validateForm()) {
-      toast.error("Please fix the errors in the form before submitting.");
+      toast.error(
+        "Please fix the errors in the form before submitting. Make sure all required fields are filled and dates are valid."
+      );
       return;
     }
 
@@ -332,8 +334,6 @@ const BookingForm = ({ selectedPlan, onClose }) => {
   };
 
   const handlePaymentSuccess = async (paymentResult) => {
-    console.log("🎉 handlePaymentSuccess in BookingForm called!");
-    console.log("Payment result:", paymentResult);
     setIsSubmitting(true);
     toast.success("Payment successful! Saving your booking...");
 
@@ -541,6 +541,7 @@ const BookingForm = ({ selectedPlan, onClose }) => {
                   <Input
                     id="parentEmail"
                     type="email"
+                    placeholder="e.g., parent@email.com"
                     value={formData.parentEmail}
                     onChange={(e) => handleEmailChange(e.target.value)}
                   />
@@ -649,6 +650,16 @@ const BookingForm = ({ selectedPlan, onClose }) => {
                             )
                           }
                         />
+                        {((selectedPlan?.name &&
+                          selectedPlan.name.toLowerCase().includes("camp")) ||
+                          (selectedPlan?.description &&
+                            selectedPlan.description
+                              .toLowerCase()
+                              .includes("camp"))) && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Child must be 4-12 years old
+                          </p>
+                        )}
                         {errors[`childDateOfBirth_${idx}`] && (
                           <p className="text-red-500 text-sm mt-1">
                             {errors[`childDateOfBirth_${idx}`]}

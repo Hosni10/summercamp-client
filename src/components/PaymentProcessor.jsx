@@ -330,10 +330,6 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
   }, []);
 
   const handlePaymentSuccess = (result) => {
-    console.log("🔥 PaymentProcessor handlePaymentSuccess called!");
-    console.log("Payment success in PaymentProcessor:", result);
-    console.log("onSuccess prop type:", typeof onSuccess);
-    console.log("onSuccess prop:", onSuccess);
     // Just call the parent's onSuccess callback - let the parent handle everything
     if (typeof onSuccess === "function") {
       console.log("Calling parent onSuccess callback");
