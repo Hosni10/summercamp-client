@@ -70,7 +70,6 @@ export default function PaymentSuccess() {
     }
 
     // Default fallback based on the page context
-    console.log("🔍 Using fallback logic. fromPage:", location.state?.fromPage);
     if (location.state?.fromPage === "football-clinic") {
       console.log("✅ Fallback: Football Clinic (from page context)");
       return "Football Clinic";
