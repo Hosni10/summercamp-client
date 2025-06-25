@@ -169,8 +169,8 @@ export default function PaymentSuccess() {
           </div>
 
           {/* Important Note */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <p className="text-sm text-yellow-800">
+          <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+            <p className="text-sm text-red-800">
               <strong>Important:</strong> Please complete the consent form to
               finalize your booking. This is required for your child's
               participation in the {planType.toLowerCase()}.
