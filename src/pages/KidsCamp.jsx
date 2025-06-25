@@ -22,14 +22,11 @@ import {
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
-import heroImage from "../assets/hero-sports-camp.jpg";
 import activitiesImage from "../assets/activities.jpeg";
-import entertainmentImage from "../assets/entertainment.jpeg";
-import detailsImage from "../assets/details.jpeg";
-import lastYearImage from "../assets/last-year.jpeg";
+import detailsImage from "../assets/full-new.jpeg";
+import lastYearImage from "../assets/last-year-new.jpeg";
 import fullImage from "../assets/kids-camp.jpeg";
 import coachImage from "../assets/coach.jpeg";
-import backgroundImage from "../assets/background.jpeg";
 import BookingForm from "../components/BookingForm.jsx";
 import { useNavigate } from "react-router-dom";
 
@@ -125,22 +122,34 @@ const campActivities = {
 
 function ImageModal({ src, alt, open, onClose }) {
   if (!open) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70">
-      <div className="relative bg-white rounded-lg shadow-lg p-2 max-w-lg w-full flex flex-col items-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4">
+      <div className="relative max-w-[95vw] max-h-[95vh] w-auto h-auto flex flex-col items-center">
+        {/* Close button */}
         <button
-          className="absolute top-2 right-2 text-gray-700 hover:text-red-500 text-2xl font-bold"
+          className="absolute -top-12 right-0 text-white hover:text-red-400 text-3xl font-bold transition-colors duration-200 z-10"
           onClick={onClose}
           aria-label="Close"
         >
           ×
         </button>
-        <img
-          src={src}
-          alt={alt}
-          className="max-h-[70vh] w-auto rounded-md object-contain"
-          style={{ maxWidth: "90vw" }}
-        />
+
+        {/* Image container */}
+        <div className="relative bg-white rounded-lg shadow-2xl overflow-hidden">
+          <img
+            src={src}
+            alt={alt}
+            className="max-w-full max-h-[85vh] w-auto h-auto object-contain rounded-lg"
+            style={{
+              maxWidth: "min(95vw, 1200px)",
+              maxHeight: "85vh",
+            }}
+          />
+        </div>
+
+        {/* Click outside to close */}
+        <div className="absolute inset-0 -z-10" onClick={onClose} />
       </div>
     </div>
   );
@@ -546,23 +555,29 @@ function KidsCamp() {
                 <h3 className="text-xl font-bold text-[#ed3227] mb-4">
                   Sibling Discounts
                 </h3>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
                   <div className="flex items-center justify-center space-x-2">
                     <Users className="h-5 w-5 text-[#ed3227]" />
                     <span>
-                      <strong>2 Siblings:</strong> 10% off
+                      <strong>1st Kid:</strong> Full Price
                     </span>
                   </div>
                   <div className="flex items-center justify-center space-x-2">
                     <Users className="h-5 w-5 text-[#ed3227]" />
                     <span>
-                      <strong>3 Siblings:</strong> 15% off
+                      <strong>2nd Kid:</strong> 10% off
                     </span>
                   </div>
                   <div className="flex items-center justify-center space-x-2">
                     <Users className="h-5 w-5 text-[#ed3227]" />
                     <span>
-                      <strong>4+ Siblings:</strong> 20% off
+                      <strong>3rd Kid:</strong> 15% off
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-center space-x-2">
+                    <Users className="h-5 w-5 text-[#ed3227]" />
+                    <span>
+                      <strong>4th Kid:</strong> 20% off
                     </span>
                   </div>
                 </div>
