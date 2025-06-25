@@ -37,6 +37,9 @@ const BookingForm = ({ selectedPlan, onClose }) => {
     children: [{ name: "", dateOfBirth: "", gender: "" }],
     startDate: "",
   });
+  const [discountCode, setDiscountCode] = useState("");
+  const [discountError, setDiscountError] = useState("");
+  const [appliedDiscount, setAppliedDiscount] = useState(0); // percent
 
   const [errors, setErrors] = useState({});
   const [showPayment, setShowPayment] = useState(false);
@@ -91,6 +94,26 @@ const BookingForm = ({ selectedPlan, onClose }) => {
   const basePrice = parseInt(selectedPlan.price.replace(/,/g, "")) || 0;
   const numChildren = parseInt(formData.numberOfChildren) || 1;
 
+  // Discount code logic
+  const discountCodes = {
+    "1dis0": 10,
+    "15dis": 15,
+    "0dis2": 20,
+    ADQ20: 20,
+    ad20nec: 20,
+  };
+
+  const handleApplyDiscount = () => {
+    const code = discountCode.trim();
+    if (discountCodes[code]) {
+      setAppliedDiscount(discountCodes[code]);
+      setDiscountError("");
+    } else {
+      setAppliedDiscount(0);
+      setDiscountError("Invalid discount code");
+    }
+  };
+
   // Calculate individual child prices
   const childPrices = [];
   let totalAmount = 0;
@@ -103,9 +126,15 @@ const BookingForm = ({ selectedPlan, onClose }) => {
   const originalTotal = basePrice * numChildren;
   const totalDiscount = originalTotal - totalAmount;
 
+  // Apply discount code (before tax)
+  const discountAmount = appliedDiscount
+    ? Math.round(totalAmount * (appliedDiscount / 100) * 100) / 100
+    : 0;
+  const discountedTotal = totalAmount - discountAmount;
+
   // Add 5% tax to the discounted total
-  const taxAmount = Math.round(totalAmount * 0.05 * 100) / 100;
-  const finalTotal = totalAmount + taxAmount;
+  const taxAmount = Math.round(discountedTotal * 0.05 * 100) / 100;
+  const finalTotal = discountedTotal + taxAmount;
 
   const validateForm = () => {
     const errors = {};
@@ -346,6 +375,16 @@ const BookingForm = ({ selectedPlan, onClose }) => {
     setIsSubmitting(true);
     toast.success("Payment successful! Saving your booking...");
 
+    // Determine discount type for backend
+    let discountType = "";
+    if (discountCode === "ADQ20") {
+      discountType = "adq employees";
+    } else if (discountCode === "ad20nec") {
+      discountType = "adnec employees";
+    } else if (appliedDiscount > 0) {
+      discountType = "normal";
+    }
+
     const bookingPayload = {
       ...formData,
       plan: selectedPlan,
@@ -356,6 +395,9 @@ const BookingForm = ({ selectedPlan, onClose }) => {
         finalTotal,
       },
       paymentId: paymentResult.paymentId,
+      discountCode: appliedDiscount > 0 ? discountCode : "",
+      discountPercent: appliedDiscount > 0 ? appliedDiscount : 0,
+      discountType: appliedDiscount > 0 ? discountType : "",
     };
 
     try {
@@ -598,6 +640,35 @@ const BookingForm = ({ selectedPlan, onClose }) => {
               </div>
             </div>
 
+            {/* Discount Code */}
+            <div>
+              <Label htmlFor="discountCode">Discount Code</Label>
+              <div className="flex gap-2 items-center">
+                <Input
+                  id="discountCode"
+                  placeholder="Enter discount code"
+                  value={discountCode}
+                  onChange={(e) => setDiscountCode(e.target.value)}
+                  className="w-48"
+                />
+                <Button
+                  type="button"
+                  onClick={handleApplyDiscount}
+                  variant="outline"
+                >
+                  Apply
+                </Button>
+              </div>
+              {discountError && (
+                <p className="text-red-500 text-sm mt-1">{discountError}</p>
+              )}
+              {appliedDiscount > 0 && !discountError && (
+                <p className="text-green-600 text-sm mt-1">
+                  {appliedDiscount}% discount applied!
+                </p>
+              )}
+            </div>
+
             {/* Child Information */}
             <div>
               <h3 className="text-lg font-semibold mb-4">
@@ -754,6 +825,12 @@ const BookingForm = ({ selectedPlan, onClose }) => {
                     <span>-AED {totalDiscount}</span>
                   </div>
                 )}
+                {appliedDiscount > 0 && (
+                  <div className="flex justify-between text-blue-600">
+                    <span>Discount Code ({appliedDiscount}%):</span>
+                    <span>-AED {discountAmount}</span>
+                  </div>
+                )}
                 <div className="flex justify-between">
                   <span>Tax (5%):</span>
                   <span>AED {taxAmount}</span>
@@ -769,6 +846,13 @@ const BookingForm = ({ selectedPlan, onClose }) => {
                 <div className="flex items-center space-x-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
                   <span>
                     Great! You're saving AED {totalDiscount} with your discount.
+                  </span>
+                </div>
+              )}
+              {appliedDiscount > 0 && (
+                <div className="flex items-center space-x-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
+                  <span>
+                    Discount code applied! You save AED {discountAmount}.
                   </span>
                 </div>
               )}

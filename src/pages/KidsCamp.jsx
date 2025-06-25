@@ -337,6 +337,15 @@ function KidsCamp() {
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
+                  <MapPin className="h-6 w-6 text-[#ed3227] mt-1" />
+                  <div>
+                    <h3 className="font-semibold">Location</h3>
+                    <p className="text-gray-600">
+                      ADNEC, Abu Dhabi summer sports, Abu Dhabi
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
                   <Users className="h-6 w-6 text-[#ed3227] mt-1" />
                   <div>
                     <h3 className="font-semibold">Age Groups</h3>
