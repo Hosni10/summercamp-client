@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button.jsx";
 import { Input } from "./ui/input.jsx";
@@ -41,6 +41,15 @@ const BookingForm = ({ selectedPlan, onClose }) => {
   const [errors, setErrors] = useState({});
   const [showPayment, setShowPayment] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Set default start date based on plan description
+  useEffect(() => {
+    if (selectedPlan) {
+      const isCamp = selectedPlan.description?.toLowerCase().includes("camp");
+      const defaultStartDate = isCamp ? "2025-07-01" : "2025-07-07";
+      setFormData((prev) => ({ ...prev, startDate: defaultStartDate }));
+    }
+  }, [selectedPlan]);
 
   // Function to calculate age from date of birth
   const calculateAge = (dateOfBirth) => {
@@ -705,7 +714,11 @@ const BookingForm = ({ selectedPlan, onClose }) => {
                   <Input
                     id="startDate"
                     type="date"
-                    min="2025-07-01"
+                    min={
+                      selectedPlan?.description?.toLowerCase().includes("camp")
+                        ? "2025-07-01"
+                        : "2025-07-07"
+                    }
                     max="2025-08-21"
                     value={formData.startDate}
                     onChange={(e) =>
