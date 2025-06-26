@@ -387,6 +387,16 @@ function KidsCamp() {
               />
             </div>
           </div>
+          <div className="text-center mt-12">
+            <a
+              href="/Camp%20Schedule.pdf"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-block bg-[#ed3227] hover:bg-[#ed3227]/90 text-white mt-4 px-8 py-4 rounded transition text-lg font-semibold"
+            >
+              View Schedule
+            </a>
+          </div>
         </div>
       </section>
 
