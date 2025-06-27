@@ -350,7 +350,7 @@ function KidsCamp() {
                   <div>
                     <h3 className="font-semibold">Age Groups</h3>
                     <p className="text-gray-600">
-                      Ages 4-12, grouped by age for optimal development
+                      Ages 4-14, grouped by age for optimal development
                     </p>
                   </div>
                 </div>
