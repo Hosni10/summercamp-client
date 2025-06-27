@@ -72,12 +72,34 @@ const BookingForm = ({ selectedPlan, onClose }) => {
     return age;
   };
 
-  // Function to validate age range (4-12 years)
+  // Function to validate age range based on plan type
   const validateAge = (dateOfBirth) => {
     const age = calculateAge(dateOfBirth);
     if (age === null) return "Date of birth is required";
-    if (age < 4) return "Child must be at least 4 years old";
-    if (age > 12) return "Child must be 12 years old or younger";
+
+    // Determine plan type
+    const isFootballClinic =
+      selectedPlan?.name?.toLowerCase().includes("football") ||
+      selectedPlan?.description?.toLowerCase().includes("football") ||
+      selectedPlan?.name?.toLowerCase().includes("clinic") ||
+      selectedPlan?.description?.toLowerCase().includes("clinic") ||
+      selectedPlan?.name?.toLowerCase().includes("session") ||
+      selectedPlan?.description?.toLowerCase().includes("session") ||
+      selectedPlan?.name?.toLowerCase().includes("week") ||
+      selectedPlan?.description?.toLowerCase().includes("week") ||
+      selectedPlan?.name?.toLowerCase().includes("month") ||
+      selectedPlan?.description?.toLowerCase().includes("month");
+
+    if (isFootballClinic) {
+      // Football Clinic: 4-19 years
+      if (age < 4) return "Child must be at least 4 years old";
+      if (age > 19) return "Child must be 19 years old or younger";
+    } else {
+      // Kids Camp: 4-13 years
+      if (age < 4) return "Child must be at least 4 years old";
+      if (age > 13) return "Child must be 13 years old or younger";
+    }
+
     return null;
   };
 
@@ -737,7 +759,41 @@ const BookingForm = ({ selectedPlan, onClose }) => {
                               .toLowerCase()
                               .includes("camp"))) && (
                           <p className="text-xs text-gray-500 mt-1">
-                            Child must be 4-12 years old
+                            Child must be 4-13 years old
+                          </p>
+                        )}
+                        {((selectedPlan?.name &&
+                          (selectedPlan.name
+                            .toLowerCase()
+                            .includes("football") ||
+                            selectedPlan.name
+                              .toLowerCase()
+                              .includes("clinic") ||
+                            selectedPlan.name
+                              .toLowerCase()
+                              .includes("session") ||
+                            selectedPlan.name.toLowerCase().includes("week") ||
+                            selectedPlan.name
+                              .toLowerCase()
+                              .includes("month"))) ||
+                          (selectedPlan?.description &&
+                            (selectedPlan.description
+                              .toLowerCase()
+                              .includes("football") ||
+                              selectedPlan.description
+                                .toLowerCase()
+                                .includes("clinic") ||
+                              selectedPlan.description
+                                .toLowerCase()
+                                .includes("session") ||
+                              selectedPlan.description
+                                .toLowerCase()
+                                .includes("week") ||
+                              selectedPlan.description
+                                .toLowerCase()
+                                .includes("month")))) && (
+                          <p className="text-xs text-gray-500 mt-1">
+                            Child must be 4-19 years old
                           </p>
                         )}
                         {errors[`childDateOfBirth_${idx}`] && (
