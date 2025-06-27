@@ -369,6 +369,7 @@ function KidsCamp() {
                     <h3 className="font-semibold">Girls Group Available</h3>
                     <p className="text-gray-600">
                       Dedicated girls-only groups for comfortable participation
+                      (girls up to 13 years old are accepted)
                     </p>
                   </div>
                 </div>
