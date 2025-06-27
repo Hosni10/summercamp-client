@@ -228,7 +228,7 @@ function FootballClinic() {
               <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm px-4 py-2 rounded-lg">
                 <Calendar className="h-5 w-5" />
                 <span className="font-medium">
-                  July 1st - August 21st, 2025
+                  July 7th - August 21st, 2025
                 </span>
               </div>
             </div>
