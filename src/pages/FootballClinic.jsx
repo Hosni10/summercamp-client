@@ -128,7 +128,7 @@ const clinicActivities = {
   ],
   schedule: {
     "U17 & U18": "3:00 PM – 5:00 PM",
-    "U6, U8 & U10": "5:00 PM – 6:15 PM",
+    "U6, U8 , U10 & Girls Clinic": "5:00 PM – 6:15 PM",
     "U12 & U13": "6:15 PM – 7:40 PM",
     "U14 & U15": "7:30 PM – 9:00 PM",
   },

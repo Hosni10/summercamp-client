@@ -123,6 +123,7 @@ const BookingForm = ({ selectedPlan, onClose }) => {
     "0dis2": 20,
     ADQ20: 20,
     ad20nec: 20,
+    "1ADNOC5": 15,
   };
 
   const handleApplyDiscount = () => {
