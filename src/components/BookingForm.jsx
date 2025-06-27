@@ -206,26 +206,26 @@ const BookingForm = ({ selectedPlan, onClose }) => {
       errors.numberOfChildren = "At least one child is required";
     }
 
-    formData.children.forEach((child, index) => {
+    formData.children.forEach((child, idx) => {
       if (!child.name.trim()) {
-        errors[`child${index}Name`] = "Child name is required";
+        errors[`childName_${idx}`] = "Child name is required";
       } else if (child.name.trim().length < 3) {
-        errors[`child${index}Name`] =
-          "Child name must be at least 3 characters";
+        errors[`childName_${idx}`] = "Child name must be at least 3 characters";
       } else if (child.name.trim().length > 20) {
-        errors[`child${index}Name`] =
-          "Child name must be maximum 20 characters";
+        errors[`childName_${idx}`] = "Child name must be maximum 20 characters";
       }
 
       // Validate date of birth and age
       const ageValidation = validateAge(child.dateOfBirth);
       if (ageValidation) {
-        errors[`child${index}DateOfBirth`] = ageValidation;
+        errors[`childDateOfBirth_${idx}`] = ageValidation;
+        console.log(`Age validation error for child ${idx}:`, ageValidation);
       }
 
-      if (!child.gender) errors[`child${index}Gender`] = "Gender is required";
+      if (!child.gender) errors[`childGender_${idx}`] = "Gender is required";
     });
 
+    console.log("Validation errors:", errors);
     setErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -239,15 +239,15 @@ const BookingForm = ({ selectedPlan, onClose }) => {
     if (field === "name") {
       const newErrors = { ...errors };
       if (!value.trim()) {
-        newErrors[`child${idx}Name`] = "Child name is required";
+        newErrors[`childName_${idx}`] = "Child name is required";
       } else if (value.trim().length < 3) {
-        newErrors[`child${idx}Name`] =
+        newErrors[`childName_${idx}`] =
           "Child name must be at least 3 characters";
       } else if (value.trim().length > 20) {
-        newErrors[`child${idx}Name`] =
+        newErrors[`childName_${idx}`] =
           "Child name must be maximum 20 characters";
       } else {
-        delete newErrors[`child${idx}Name`];
+        delete newErrors[`childName_${idx}`];
       }
       setErrors(newErrors);
     }
@@ -256,10 +256,19 @@ const BookingForm = ({ selectedPlan, onClose }) => {
     if (field === "dateOfBirth") {
       const newErrors = { ...errors };
       const ageValidation = validateAge(value);
+      console.log(`Real-time age validation for child ${idx}:`, {
+        value,
+        ageValidation,
+      });
       if (ageValidation) {
-        newErrors[`child${idx}DateOfBirth`] = ageValidation;
+        newErrors[`childDateOfBirth_${idx}`] = ageValidation;
+        console.log(
+          `Setting error for childDateOfBirth_${idx}:`,
+          ageValidation
+        );
       } else {
-        delete newErrors[`child${idx}DateOfBirth`];
+        delete newErrors[`childDateOfBirth_${idx}`];
+        console.log(`Clearing error for childDateOfBirth_${idx}`);
       }
       setErrors(newErrors);
     }
@@ -800,6 +809,10 @@ const BookingForm = ({ selectedPlan, onClose }) => {
                           <p className="text-red-500 text-sm mt-1">
                             {errors[`childDateOfBirth_${idx}`]}
                           </p>
+                        )}
+                        {console.log(
+                          `Checking error for childDateOfBirth_${idx}:`,
+                          errors[`childDateOfBirth_${idx}`]
                         )}
                       </div>
                       <div>
