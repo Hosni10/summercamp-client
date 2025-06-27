@@ -95,9 +95,9 @@ const BookingForm = ({ selectedPlan, onClose }) => {
       if (age < 4) return "Child must be at least 4 years old";
       if (age > 19) return "Child must be 19 years old or younger";
     } else {
-      // Kids Camp: 4-13 years
+      // Kids Camp: 4-14 years
       if (age < 4) return "Child must be at least 4 years old";
-      if (age > 13) return "Child must be 13 years old or younger";
+      if (age > 14) return "Child must be 14 years old or younger";
     }
 
     return null;
@@ -769,7 +769,7 @@ const BookingForm = ({ selectedPlan, onClose }) => {
                               .toLowerCase()
                               .includes("camp"))) && (
                           <p className="text-xs text-gray-500 mt-1">
-                            Child must be 4-13 years old
+                            Child must be 4-14 years old
                           </p>
                         )}
                         {((selectedPlan?.name &&
