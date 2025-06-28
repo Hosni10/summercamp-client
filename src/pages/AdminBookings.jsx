@@ -69,6 +69,7 @@ function AdminBookings() {
       "Children Ages",
       "Children Genders",
       "Start Date",
+      "Expiry Date",
       "Plan",
       "Location",
       "Total Amount",
@@ -89,6 +90,7 @@ function AdminBookings() {
         .join(", "),
       booking.children.map((child) => child.gender).join(", "),
       booking.startDate,
+      booking.expiryDate || "N/A",
       booking.membershipPlan,
       booking.location,
       booking.totalAmountPaid,
@@ -266,6 +268,10 @@ function AdminBookings() {
                   <div>
                     <span className="font-medium">Start Date:</span>{" "}
                     {booking.startDate}
+                  </div>
+                  <div>
+                    <span className="font-medium">Expiry Date:</span>{" "}
+                    {booking.expiryDate || "N/A"}
                   </div>
                   <div>
                     <span className="font-medium">Children Names:</span>{" "}
