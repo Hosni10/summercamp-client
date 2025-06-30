@@ -302,14 +302,7 @@ const ParentConsentForm = () => {
         Kids Registration, Consent & Health Declaration Form
       </h1>
 
-      {!location.state?.booking && !location.state?.bookingData && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-          <p className="text-yellow-800 text-sm">
-            <strong>Note:</strong> No booking data found. Please fill in all
-            fields manually or go back to complete a booking first.
-          </p>
-        </div>
-      )}
+
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Kids Details */}
