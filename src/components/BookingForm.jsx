@@ -121,7 +121,7 @@ const BookingForm = ({ selectedPlan, onClose }) => {
     "1dis0": 10,
     "15dis": 15,
     "0dis2": 20,
-    ADQ20: 20,
+    "ADQ20@ADSS2025": 32.73,
     ad20nec: 20,
     "1ADNOC5": 15,
   };
@@ -409,7 +409,7 @@ const BookingForm = ({ selectedPlan, onClose }) => {
 
     // Determine discount type for backend
     let discountType = "";
-    if (discountCode === "ADQ20") {
+    if (discountCode === "ADQ20@ADSS2025") {
       discountType = "adq employees";
     } else if (discountCode === "ad20nec") {
       discountType = "adnec employees";
