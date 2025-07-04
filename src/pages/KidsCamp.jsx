@@ -92,17 +92,17 @@ const campPlans = {
     },
   ],
   alAin: [
-    {
-      name: "Test Plan (2 AED)",
-      description: "Test plan for debugging payment flow",
-      price: "2",
-      features: [
-        "Test payment only",
-        "For debugging only",
-        "Valid Monday to Thursday only",
-      ],
-      popular: false,
-    },
+    // {
+    //   name: "Test Plan (2 AED)",
+    //   description: "Test plan for debugging payment flow",
+    //   price: "2",
+    //   features: [
+    //     "Test payment only",
+    //     "For debugging only",
+    //     "Valid Monday to Thursday only",
+    //   ],
+    //   popular: false,
+    // },
     {
       name: "1-Day Access",
       description: "1 day access within 1 week (Monday to Thursday)",
