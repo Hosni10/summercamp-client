@@ -91,6 +91,61 @@ const campPlans = {
       popular: false,
     },
   ],
+  alAin: [
+    {
+      name: "1-Day Access",
+      description: "1 day access within 1 week (Monday to Thursday)",
+      price: "150",
+      features: [
+        "Full day camp activities",
+        "Professional supervision",
+        "Valid Monday to Thursday only",
+      ],
+    },
+    {
+      name: "1 Week (4 Days Access)",
+      description: "4 days access within 1 week (Monday to Thursday)",
+      price: "440",
+      features: [
+        "Full day camp activities",
+        "Skill development",
+        "Valid Monday to Thursday only",
+      ],
+      popular: true,
+    },
+    {
+      name: "2 Weeks (8 Days Access)",
+      description: "8 days access within 2 weeks (Monday to Thursday)",
+      price: "880",
+      features: [
+        "Full day camp activities",
+        "Skill development",
+        "Valid Monday to Thursday only",
+      ],
+    },
+    {
+      name: "1 Month (16 Days Access)",
+      description:
+        "16 days access within 1 month (Monday to Thursday each week)",
+      price: "1760",
+      features: [
+        "Full day camp activities",
+        "Skill development",
+        "Valid Monday to Thursday only",
+      ],
+    },
+    {
+      name: "Full Camp (26 Days Access)",
+      description:
+        "26 days access for the full camp (Monday to Thursday each week)",
+      price: "2860",
+      features: [
+        "Full day camp activities",
+        "Skill development",
+        "Valid Monday to Thursday only",
+      ],
+    },
+  ],
 };
 
 const campActivities = {
@@ -519,6 +574,17 @@ function KidsCamp() {
                 <MapPin className="h-4 w-4 inline mr-2" />
                 Abu Dhabi
               </button>
+              <button
+                className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                  selectedLocation === "alAin"
+                    ? "bg-[#ed3227] text-white"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+                onClick={() => setSelectedLocation("alAin")}
+              >
+                <MapPin className="h-4 w-4 inline mr-2" />
+                Al Ain
+              </button>
             </div>
           </div>
 
@@ -612,6 +678,7 @@ function KidsCamp() {
         <BookingForm
           selectedPlan={selectedPlan}
           selectedLocation={selectedLocation}
+          campType="kidsCamp"
           onClose={() => setShowBookingForm(false)}
         />
       )}

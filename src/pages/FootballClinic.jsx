@@ -449,6 +449,7 @@ function FootballClinic() {
       {showBookingForm && selectedPlan && (
         <BookingForm
           selectedPlan={selectedPlan}
+          campType="footballClinic"
           onClose={() => setShowBookingForm(false)}
         />
       )}

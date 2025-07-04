@@ -25,7 +25,7 @@ import axios from "axios";
 import PaymentProcessor from "./PaymentProcessor.jsx";
 import { toast, Toaster } from "sonner";
 
-const BookingForm = ({ selectedPlan, onClose }) => {
+const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: "",
@@ -45,14 +45,18 @@ const BookingForm = ({ selectedPlan, onClose }) => {
   const [showPayment, setShowPayment] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Set default start date based on plan description
+  // Set default start date based on plan description and location
   useEffect(() => {
     if (selectedPlan) {
-      const isCamp = selectedPlan.description?.toLowerCase().includes("camp");
-      const defaultStartDate = isCamp ? "2025-07-01" : "2025-07-07";
-      setFormData((prev) => ({ ...prev, startDate: defaultStartDate }));
+      if (selectedLocation === "alAin") {
+        setFormData((prev) => ({ ...prev, startDate: "2025-07-07" }));
+      } else {
+        const isCamp = selectedPlan.description?.toLowerCase().includes("camp");
+        const defaultStartDate = isCamp ? "2025-07-01" : "2025-07-07";
+        setFormData((prev) => ({ ...prev, startDate: defaultStartDate }));
+      }
     }
-  }, [selectedPlan]);
+  }, [selectedPlan, selectedLocation]);
 
   // Function to calculate age from date of birth
   const calculateAge = (dateOfBirth) => {
@@ -72,34 +76,18 @@ const BookingForm = ({ selectedPlan, onClose }) => {
     return age;
   };
 
-  // Function to validate age range based on plan type
+  // Function to validate age range based on campType
   const validateAge = (dateOfBirth) => {
     const age = calculateAge(dateOfBirth);
     if (age === null) return "Date of birth is required";
 
-    // Determine plan type
-    const isFootballClinic =
-      selectedPlan?.name?.toLowerCase().includes("football") ||
-      selectedPlan?.description?.toLowerCase().includes("football") ||
-      selectedPlan?.name?.toLowerCase().includes("clinic") ||
-      selectedPlan?.description?.toLowerCase().includes("clinic") ||
-      selectedPlan?.name?.toLowerCase().includes("session") ||
-      selectedPlan?.description?.toLowerCase().includes("session") ||
-      selectedPlan?.name?.toLowerCase().includes("week") ||
-      selectedPlan?.description?.toLowerCase().includes("week") ||
-      selectedPlan?.name?.toLowerCase().includes("month") ||
-      selectedPlan?.description?.toLowerCase().includes("month");
-
-    if (isFootballClinic) {
-      // Football Clinic: 4-19 years
+    if (campType === "footballClinic") {
       if (age < 4) return "Child must be at least 4 years old";
       if (age > 19) return "Child must be 19 years old or younger";
     } else {
-      // Kids Camp: 4-14 years
       if (age < 4) return "Child must be at least 4 years old";
       if (age > 14) return "Child must be 14 years old or younger";
     }
-
     return null;
   };
 
@@ -420,6 +408,7 @@ const BookingForm = ({ selectedPlan, onClose }) => {
     const bookingPayload = {
       ...formData,
       plan: selectedPlan,
+      location: selectedLocation,
       pricing: {
         originalTotal,
         totalDiscount,
@@ -515,6 +504,7 @@ const BookingForm = ({ selectedPlan, onClose }) => {
   const fullBookingData = {
     ...formData,
     plan: selectedPlan,
+    location: selectedLocation,
     pricing: {
       originalTotal,
       totalDiscount,
@@ -549,8 +539,12 @@ const BookingForm = ({ selectedPlan, onClose }) => {
               <p className="text-gray-600 mt-1">
                 {selectedPlan?.name?.toLowerCase().includes("football") ||
                 selectedPlan?.description?.toLowerCase().includes("football")
-                  ? "Abu Dhabi - Full day access to Football Clinic"
-                  : "Abu Dhabi - Full day access to Kids Camp"}
+                  ? `${
+                      selectedLocation === "alAin" ? "Al Ain" : "Abu Dhabi"
+                    } - Full day access to Football Clinic`
+                  : `${
+                      selectedLocation === "alAin" ? "Al Ain" : "Abu Dhabi"
+                    } - Full day access to Kids Camp`}
               </p>
             </div>
             <Button variant="ghost" size="icon" onClick={onClose}>
@@ -566,9 +560,12 @@ const BookingForm = ({ selectedPlan, onClose }) => {
                 <p className="text-gray-600">
                   {selectedPlan?.name?.toLowerCase().includes("football") ||
                   selectedPlan?.description?.toLowerCase().includes("football")
-                    ? "Full day access to Football Clinic"
-                    : "Full day access to Kids Camp"}
-                  {" - Abu Dhabi"}
+                    ? `Full day access to Football Clinic - ${
+                        selectedLocation === "alAin" ? "Al Ain" : "Abu Dhabi"
+                      }`
+                    : `Full day access to Kids Camp - ${
+                        selectedLocation === "alAin" ? "Al Ain" : "Abu Dhabi"
+                      }`}
                 </p>
               </div>
               <div className="text-right">
@@ -762,58 +759,15 @@ const BookingForm = ({ selectedPlan, onClose }) => {
                             )
                           }
                         />
-                        {((selectedPlan?.name &&
-                          selectedPlan.name.toLowerCase().includes("camp")) ||
-                          (selectedPlan?.description &&
-                            selectedPlan.description
-                              .toLowerCase()
-                              .includes("camp"))) && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Child must be 4-14 years old
-                          </p>
-                        )}
-                        {((selectedPlan?.name &&
-                          (selectedPlan.name
-                            .toLowerCase()
-                            .includes("football") ||
-                            selectedPlan.name
-                              .toLowerCase()
-                              .includes("clinic") ||
-                            selectedPlan.name
-                              .toLowerCase()
-                              .includes("session") ||
-                            selectedPlan.name.toLowerCase().includes("week") ||
-                            selectedPlan.name
-                              .toLowerCase()
-                              .includes("month"))) ||
-                          (selectedPlan?.description &&
-                            (selectedPlan.description
-                              .toLowerCase()
-                              .includes("football") ||
-                              selectedPlan.description
-                                .toLowerCase()
-                                .includes("clinic") ||
-                              selectedPlan.description
-                                .toLowerCase()
-                                .includes("session") ||
-                              selectedPlan.description
-                                .toLowerCase()
-                                .includes("week") ||
-                              selectedPlan.description
-                                .toLowerCase()
-                                .includes("month")))) && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Child must be 4-19 years old
-                          </p>
-                        )}
+                        <p className="text-xs text-gray-500 mt-1">
+                          Child must be{" "}
+                          {campType === "footballClinic" ? "4-19" : "4-14"}{" "}
+                          years old
+                        </p>
                         {errors[`childDateOfBirth_${idx}`] && (
                           <p className="text-red-500 text-sm mt-1">
                             {errors[`childDateOfBirth_${idx}`]}
                           </p>
-                        )}
-                        {console.log(
-                          `Checking error for childDateOfBirth_${idx}:`,
-                          errors[`childDateOfBirth_${idx}`]
                         )}
                       </div>
                       <div>
