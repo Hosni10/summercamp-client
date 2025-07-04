@@ -398,7 +398,10 @@ function KidsCamp() {
                   <div>
                     <h3 className="font-semibold">Schedule</h3>
                     <p className="text-gray-600">
-                      Monday to Friday, 8:30 AM - 2 PM
+                      Monday to Thursday, 8:30 AM - 2 PM
+                      <br />
+                      Friday , 8:30 AM - 1 PM
+
                     </p>
                   </div>
                 </div>
