@@ -131,7 +131,7 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
       return;
     }
 
-    setIsProcessing(true);
+    setIsProcessing(true); // Disable button immediately
     setPaymentError(null);
 
     const cardElement = elements.getElement(CardElement);
@@ -165,12 +165,18 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
       if (error) {
         console.error("Payment error:", error);
         if (error.code === "payment_intent_unexpected_state") {
-          setPaymentError("Payment session expired. Please try again.");
+          setPaymentError(
+            "Payment session expired or already processed. Please try again."
+          );
+          setIsProcessing(false); // Re-enable button for retry after reset
           // Reset payment intent
           resetPayment();
+          return; // Stop further processing
         } else {
           setPaymentError(error.message);
+          setIsProcessing(false);
           onError(error);
+          return;
         }
       } else if (paymentIntent && paymentIntent.status === "succeeded") {
         console.log("Payment succeeded:", paymentIntent);
@@ -187,14 +193,19 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
           paymentIntent?.status
         );
         setPaymentError("Payment status unexpected. Please try again.");
+        setIsProcessing(false);
         onError(new Error("Payment status unexpected"));
+        return;
       }
     } catch (error) {
       console.error("Unexpected payment error:", error);
       setPaymentError("An unexpected error occurred. Please try again.");
-      onError(error);
-    } finally {
       setIsProcessing(false);
+      onError(error);
+      return;
+    } finally {
+      // Only set isProcessing to false if payment did not succeed
+      // If payment succeeded, the modal will close and form will unmount
     }
   };
 
