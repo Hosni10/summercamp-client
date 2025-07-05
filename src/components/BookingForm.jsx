@@ -116,6 +116,16 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
 
   const handleApplyDiscount = () => {
     const code = discountCode.trim();
+
+    // Check if sibling discount is already applied (more than 1 child)
+    if (numChildren > 1) {
+      setAppliedDiscount(0);
+      setDiscountError(
+        "Discount codes cannot be used with sibling discounts. Please remove additional children or clear the discount code."
+      );
+      return;
+    }
+
     if (discountCodes[code]) {
       setAppliedDiscount(discountCodes[code]);
       setDiscountError("");
@@ -341,6 +351,15 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
       updated = updated.slice(0, num);
     }
     setFormData({ ...formData, numberOfChildren: num, children: updated });
+
+    // Clear discount code if more than 1 child is selected (sibling discount applies)
+    if (num > 1 && appliedDiscount > 0) {
+      setAppliedDiscount(0);
+      setDiscountCode("");
+      setDiscountError(
+        "Discount code has been cleared. Sibling discounts cannot be combined with discount codes."
+      );
+    }
   };
 
   const calculateAccessPeriod = (startDate, planName) => {
@@ -675,19 +694,31 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
               <div className="flex gap-2 items-center">
                 <Input
                   id="discountCode"
-                  placeholder="Enter discount code"
+                  placeholder={
+                    numChildren > 1
+                      ? "Not available with sibling discounts"
+                      : "Enter discount code"
+                  }
                   value={discountCode}
                   onChange={(e) => setDiscountCode(e.target.value)}
                   className="w-48"
+                  disabled={numChildren > 1}
                 />
                 <Button
                   type="button"
                   onClick={handleApplyDiscount}
                   variant="outline"
+                  disabled={numChildren > 1}
                 >
                   Apply
                 </Button>
               </div>
+              {numChildren > 1 && (
+                <p className="text-amber-600 text-sm mt-1">
+                  ⚠️ Discount codes are not available when registering multiple
+                  children (sibling discounts apply automatically)
+                </p>
+              )}
               {discountError && (
                 <p className="text-red-500 text-sm mt-1">{discountError}</p>
               )}
@@ -832,6 +863,14 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
             {/* Pricing Summary */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Pricing Summary</h3>
+              {numChildren > 1 && (
+                <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
+                  <p className="text-amber-800 text-sm">
+                    ⚠️ Note: Only one type of discount can be applied. Sibling
+                    discounts are active, discount codes are disabled.
+                  </p>
+                </div>
+              )}
               <div className="bg-gray-50 p-4 rounded-lg space-y-2">
                 {formData.children.map((child, idx) => (
                   <div key={idx} className="flex justify-between">
@@ -845,7 +884,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                 </div>
                 {totalDiscount > 0 && (
                   <div className="flex justify-between text-green-600">
-                    <span>Total Discount:</span>
+                    <span>Sibling Discount:</span>
                     <span>-AED {totalDiscount}</span>
                   </div>
                 )}
@@ -869,7 +908,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
               {totalDiscount > 0 && (
                 <div className="flex items-center space-x-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
                   <span>
-                    Great! You're saving AED {totalDiscount} with your discount.
+                    Great! You're saving AED {totalDiscount} with sibling
+                    discounts.
                   </span>
                 </div>
               )}
