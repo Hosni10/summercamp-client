@@ -20,6 +20,8 @@ import {
   X,
 } from "lucide-react";
 import footballClinicImage from "../assets/football-clinic.jpeg";
+import kidsImage from "../assets/football-clinic-kid.jpeg";
+
 import coachImage from "../assets/coach.jpeg";
 import backgroundImage from "../assets/background.jpeg";
 import BookingForm from "../components/BookingForm.jsx";
@@ -305,7 +307,7 @@ function FootballClinic() {
 
               </div>
             </div>
-            {/* <div
+            <div
               className="relative rounded-lg overflow-hidden shadow-lg cursor-pointer"
               onClick={() =>
                 setModalImg({
@@ -319,7 +321,7 @@ function FootballClinic() {
                 alt="Football Training"
                 className="w-full h-[400px] object-cover hover:opacity-80 transition-opacity"
               />
-            </div> */}
+            </div>
           </div>
         </div>
       </section>
@@ -341,13 +343,13 @@ function FootballClinic() {
               className="relative rounded-lg overflow-hidden shadow-lg cursor-pointer"
               onClick={() =>
                 setModalImg({
-                  src: footballClinicImage,
+                  src: kidsImage,
                   alt: "Football Training",
                 })
               }
             >
               <img
-                src={footballClinicImage}
+                src={kidsImage}
                 alt="Football Training"
                 className="w-full h-[400px] object-cover hover:opacity-80 transition-opacity"
               />
