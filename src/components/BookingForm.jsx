@@ -93,12 +93,20 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
 
   const calculateChildPrice = (childIndex) => {
     const basePrice = parseInt(selectedPlan.price.replace(/,/g, "")) || 0;
+
+    // If a discount code is applied, apply it to all children
+    if (appliedDiscount > 0) {
+      const discountAmount = (basePrice * appliedDiscount) / 100;
+      return Math.round((basePrice - discountAmount) * 10) / 10;
+    }
+
+    // If no discount code, apply sibling discount logic
     if (childIndex === 0) return basePrice; // First child pays full price
 
     // Calculate discount for each child based on position
     const discountPercentage = Math.min(10 + (childIndex - 1) * 5, 20); // 2nd child: 10%, 3rd: 15%, 4th: 20%, 5th+: 20%
     const discountAmount = (basePrice * discountPercentage) / 100;
-    return Math.round((basePrice - discountAmount) * 100) / 100;
+    return Math.round((basePrice - discountAmount) * 10) / 10;
   };
 
   const basePrice = parseInt(selectedPlan.price.replace(/,/g, "")) || 0;
@@ -112,19 +120,11 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     "ADQ20@ADSS2025": 32.73,
     ad20nec: 20,
     "1ADNOC5": 15,
+    "Adnecstaff20@adss2025": 32.73,
   };
 
   const handleApplyDiscount = () => {
     const code = discountCode.trim();
-
-    // Check if sibling discount is already applied (more than 1 child)
-    if (numChildren > 1) {
-      setAppliedDiscount(0);
-      setDiscountError(
-        "Discount codes cannot be used with sibling discounts. Please remove additional children or clear the discount code."
-      );
-      return;
-    }
 
     if (discountCodes[code]) {
       setAppliedDiscount(discountCodes[code]);
@@ -133,6 +133,12 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
       setAppliedDiscount(0);
       setDiscountError("Invalid discount code");
     }
+  };
+
+  const handleClearDiscount = () => {
+    setAppliedDiscount(0);
+    setDiscountCode("");
+    setDiscountError("");
   };
 
   // Calculate individual child prices
@@ -144,18 +150,18 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     totalAmount += childPrice;
   }
 
-  const originalTotal = basePrice * numChildren;
-  const totalDiscount = originalTotal - totalAmount;
+  // Round total amount to 1 decimal place
+  totalAmount = Math.round(totalAmount * 10) / 10;
 
-  // Apply discount code (before tax)
-  const discountAmount = appliedDiscount
-    ? Math.round(totalAmount * (appliedDiscount / 100) * 100) / 100
-    : 0;
-  const discountedTotal = totalAmount - discountAmount;
+  const originalTotal = basePrice * numChildren;
+  const totalDiscount = Math.round((originalTotal - totalAmount) * 10) / 10;
+
+  // No additional discount code calculation needed since it's now applied per child
+  const discountedTotal = totalAmount; // The discount is already applied per child
 
   // Add 5% tax to the discounted total
-  const taxAmount = Math.round(discountedTotal * 0.05 * 100) / 100;
-  const finalTotal = discountedTotal + taxAmount;
+  const taxAmount = Math.round(discountedTotal * 0.05 * 10) / 10;
+  const finalTotal = Math.round((discountedTotal + taxAmount) * 10) / 10;
 
   const validateForm = () => {
     const errors = {};
@@ -351,15 +357,6 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
       updated = updated.slice(0, num);
     }
     setFormData({ ...formData, numberOfChildren: num, children: updated });
-
-    // Clear discount code if more than 1 child is selected (sibling discount applies)
-    if (num > 1 && appliedDiscount > 0) {
-      setAppliedDiscount(0);
-      setDiscountCode("");
-      setDiscountError(
-        "Discount code has been cleared. Sibling discounts cannot be combined with discount codes."
-      );
-    }
   };
 
   const calculateAccessPeriod = (startDate, planName) => {
@@ -420,6 +417,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
       discountType = "adq employees";
     } else if (discountCode === "ad20nec") {
       discountType = "adnec employees";
+    } else if (discountCode === "Adnecstaff20@adss2025") {
+      discountType = "adnec staff";
     } else if (appliedDiscount > 0) {
       discountType = "normal";
     }
@@ -694,29 +693,33 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
               <div className="flex gap-2 items-center">
                 <Input
                   id="discountCode"
-                  placeholder={
-                    numChildren > 1
-                      ? "Not available with sibling discounts"
-                      : "Enter discount code"
-                  }
+                  placeholder="Enter discount code"
                   value={discountCode}
                   onChange={(e) => setDiscountCode(e.target.value)}
                   className="w-48"
-                  disabled={numChildren > 1}
                 />
                 <Button
                   type="button"
                   onClick={handleApplyDiscount}
                   variant="outline"
-                  disabled={numChildren > 1}
                 >
                   Apply
                 </Button>
+                {appliedDiscount > 0 && (
+                  <Button
+                    type="button"
+                    onClick={handleClearDiscount}
+                    variant="outline"
+                    className="text-red-600 hover:text-red-700"
+                  >
+                    Clear
+                  </Button>
+                )}
               </div>
-              {numChildren > 1 && (
-                <p className="text-amber-600 text-sm mt-1">
-                  ⚠️ Discount codes are not available when registering multiple
-                  children (sibling discounts apply automatically)
+              {numChildren > 1 && appliedDiscount === 0 && (
+                <p className="text-blue-600 text-sm mt-1">
+                  💡 Sibling discounts apply automatically: 2nd child 10% off,
+                  3rd child 15% off, 4th child 20% off
                 </p>
               )}
               {discountError && (
@@ -724,7 +727,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
               )}
               {appliedDiscount > 0 && !discountError && (
                 <p className="text-green-600 text-sm mt-1">
-                  {appliedDiscount}% discount applied!
+                  {appliedDiscount}% discount applied to all children!
                 </p>
               )}
             </div>
@@ -863,11 +866,19 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
             {/* Pricing Summary */}
             <div className="space-y-4">
               <h3 className="text-lg font-semibold">Pricing Summary</h3>
-              {numChildren > 1 && (
-                <div className="bg-amber-50 border border-amber-200 p-3 rounded-lg">
-                  <p className="text-amber-800 text-sm">
-                    ⚠️ Note: Only one type of discount can be applied. Sibling
-                    discounts are active, discount codes are disabled.
+              {appliedDiscount > 0 && (
+                <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
+                  <p className="text-blue-800 text-sm">
+                    💡 Discount code applied: {appliedDiscount}% off for all
+                    children
+                  </p>
+                </div>
+              )}
+              {numChildren > 1 && appliedDiscount === 0 && (
+                <div className="bg-green-50 border border-green-200 p-3 rounded-lg">
+                  <p className="text-green-800 text-sm">
+                    💡 Sibling discounts applied: 2nd child 10% off, 3rd child
+                    15% off, 4th child 20% off
                   </p>
                 </div>
               )}
@@ -882,7 +893,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                   <span>Subtotal:</span>
                   <span>AED {totalAmount}</span>
                 </div>
-                {totalDiscount > 0 && (
+                {totalDiscount > 0 && appliedDiscount === 0 && (
                   <div className="flex justify-between text-green-600">
                     <span>Sibling Discount:</span>
                     <span>-AED {totalDiscount}</span>
@@ -891,7 +902,9 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                 {appliedDiscount > 0 && (
                   <div className="flex justify-between text-blue-600">
                     <span>Discount Code ({appliedDiscount}%):</span>
-                    <span>-AED {discountAmount}</span>
+                    <span>
+                      -AED {Math.round((originalTotal - totalAmount) * 10) / 10}
+                    </span>
                   </div>
                 )}
                 <div className="flex justify-between">
@@ -905,7 +918,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                   </div>
                 </div>
               </div>
-              {totalDiscount > 0 && (
+              {totalDiscount > 0 && appliedDiscount === 0 && (
                 <div className="flex items-center space-x-2 text-sm text-green-600 bg-green-50 p-3 rounded-lg">
                   <span>
                     Great! You're saving AED {totalDiscount} with sibling
@@ -916,7 +929,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
               {appliedDiscount > 0 && (
                 <div className="flex items-center space-x-2 text-sm text-blue-600 bg-blue-50 p-3 rounded-lg">
                   <span>
-                    Discount code applied! You save AED {discountAmount}.
+                    Discount code applied! You save AED{" "}
+                    {Math.round((originalTotal - totalAmount) * 10) / 10}.
                   </span>
                 </div>
               )}

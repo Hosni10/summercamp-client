@@ -390,6 +390,7 @@ function KidsCamp() {
               Camp Details
             </h2>
           </div>
+
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div className="space-y-6">
               <div className="space-y-4">
@@ -397,21 +398,52 @@ function KidsCamp() {
                   <Calendar className="h-6 w-6 text-[#ed3227] mt-1" />
                   <div>
                     <h3 className="font-semibold">Schedule</h3>
-                    <p className="text-gray-600">
-                      Monday to Thursday, 8:30 AM - 2 PM
-                      <br />
-                      Friday , 8:30 AM - 1 PM
-
-                    </p>
+                    <div className="text-gray-600 space-y-2">
+                      <div>
+                        <span className="font-medium text-gray-800">
+                          Abu Dhabi:
+                        </span>
+                        <br />
+                        Monday to Friday, 8:30 AM - 2 PM
+                        <br />
+                        <span className="text-sm text-gray-500">
+                          (Friday ends at 1 PM)
+                        </span>
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-800">
+                          Al Ain:
+                        </span>
+                        <br />
+                        Monday to Thursday, 8:30 AM - 2 PM
+                        <br />
+                        <span className="text-sm text-gray-500">
+                          (No Friday sessions)
+                        </span>
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
                   <MapPin className="h-6 w-6 text-[#ed3227] mt-1" />
                   <div>
-                    <h3 className="font-semibold">Location</h3>
-                    <p className="text-gray-600">
-                      ADNEC, Abu Dhabi summer sports, Abu Dhabi
-                    </p>
+                    <h3 className="font-semibold">Locations</h3>
+                    <div className="text-gray-600 space-y-2">
+                      <div>
+                        <span className="font-medium text-gray-800">
+                          Abu Dhabi:
+                        </span>
+                        <br />
+                        ADNEC, Abu Dhabi summer sports, Abu Dhabi
+                      </div>
+                      <div>
+                        <span className="font-medium text-gray-800">
+                          Al Ain:
+                        </span>
+                        <br />
+                        ADNEC, Al Ain summer sports, Al Ain City
+                      </div>
+                    </div>
                   </div>
                 </div>
                 <div className="flex items-start space-x-3">
@@ -457,6 +489,7 @@ function KidsCamp() {
               />
             </div>
           </div>
+
           <div className="text-center mt-12">
             <a
               href="/Camp%20Schedule.pdf"

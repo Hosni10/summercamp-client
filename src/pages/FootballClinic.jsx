@@ -246,6 +246,84 @@ function FootballClinic() {
         </div>
       </section>
 
+      {/* Camp Details Section */}
+      <section className="py-16 px-4 sm:px-6 lg:px-8 bg-gray-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Camp Details
+            </h2>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <div className="flex items-start space-x-3">
+                  <Calendar className="h-6 w-6 text-[#ed3227] mt-1" />
+                  <div>
+                    <h3 className="font-semibold">Schedule</h3>
+                    <p className="text-gray-600">
+                      Monday, Tuesday & Thursday
+                      <br />
+                      3:00 PM - 9:00 PM
+                      <br />
+                      <span className="text-sm text-gray-500">
+                        (Check specific timing for each age group below)
+                      </span>
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <MapPin className="h-6 w-6 text-[#ed3227] mt-1" />
+                  <div>
+                    <h3 className="font-semibold">Location</h3>
+                    <p className="text-gray-600">
+                      ADNEC, Abu Dhabi summer sports, Abu Dhabi
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <Users className="h-6 w-6 text-[#ed3227] mt-1" />
+                  <div>
+                    <h3 className="font-semibold">Age Groups</h3>
+                    <p className="text-gray-600">
+                      Ages 4-19 years old, grouped by age for optimal
+                      development
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-start space-x-3">
+                  <Star className="h-6 w-6 text-[#ed3227] mt-1" />
+                  <div>
+                    <h3 className="font-semibold">Professional Staff</h3>
+                    <p className="text-gray-600">
+                      Qualified football coaches and instructors for each age
+                      group
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+            {/* <div
+              className="relative rounded-lg overflow-hidden shadow-lg cursor-pointer"
+              onClick={() =>
+                setModalImg({
+                  src: footballClinicImage,
+                  alt: "Football Training",
+                })
+              }
+            >
+              <img
+                src={footballClinicImage}
+                alt="Football Training"
+                className="w-full h-[400px] object-cover hover:opacity-80 transition-opacity"
+              />
+            </div> */}
+          </div>
+        </div>
+      </section>
+
       {/* Training Program Section */}
       <section className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
@@ -449,6 +527,7 @@ function FootballClinic() {
       {showBookingForm && selectedPlan && (
         <BookingForm
           selectedPlan={selectedPlan}
+          selectedLocation="abuDhabi"
           campType="footballClinic"
           onClose={() => setShowBookingForm(false)}
         />
