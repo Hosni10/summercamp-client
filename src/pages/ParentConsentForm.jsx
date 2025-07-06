@@ -222,7 +222,8 @@ const ParentConsentForm = () => {
         location.state?.booking || location.state?.bookingData;
 
       const formData = {
-        parentBooking: bookingData?._id,
+        // Only include parentBooking if bookingData exists and has an _id
+        ...(bookingData?._id && { parentBooking: bookingData._id }),
         // Kids Details
         kidFullName: form.kidFullName,
         dob: form.dob,
@@ -264,16 +265,11 @@ const ParentConsentForm = () => {
 
       console.log("Submitting form data:", formData);
 
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_SERVER_URL || "http://localhost:5000"
-        }/api/consent-forms`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(formData),
-        }
-      );
+      const response = await fetch(`http://localhost:5000/api/consent-forms`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
 
       const result = await response.json();
       console.log("📡 Response result:", result);
@@ -301,8 +297,6 @@ const ParentConsentForm = () => {
       <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">
         Kids Registration, Consent & Health Declaration Form
       </h1>
-
-
 
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Kids Details */}
