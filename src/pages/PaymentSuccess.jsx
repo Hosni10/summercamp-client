@@ -29,42 +29,41 @@ export default function PaymentSuccess() {
   };
 
   // Function to determine plan type
-  const getPlanType = (planName) => {
+  const getPlanType = (planName, planDescription) => {
     if (!planName) return "Unknown Plan";
 
     const planNameLower = planName.toLowerCase();
+    const planDescriptionLower = planDescription
+      ? planDescription.toLowerCase()
+      : "";
 
-    // Check for Football Clinic indicators
+    // First check the description for unique keywords
     if (
-      planNameLower.includes("football") ||
-      planNameLower.includes("clinic") ||
-      planNameLower.includes("session") ||
-      planNameLower.includes("membership") ||
-      planNameLower.includes("training") ||
-      planNameLower.includes("week") ||
-      planNameLower.includes("month") ||
-      planNameLower.includes("test plan") ||
-      planNameLower.includes("1 day access") ||
-      planNameLower.includes("3 sessions") ||
-      planNameLower.includes("12 sessions") ||
-      planNameLower.includes("21 sessions") ||
-      planNameLower.includes("full camp access") ||
-      planNameLower.includes("full month")
+      planDescriptionLower.includes("football") ||
+      planDescriptionLower.includes("training")
     ) {
       return "Football Clinic";
     }
 
-    // Check for Kids Camp indicators
     if (
-      planNameLower.includes("kids camp") ||
-      planNameLower.includes("kids") ||
-      (planNameLower.includes("day") &&
-        !planNameLower.includes("week") &&
-        !planNameLower.includes("month") &&
-        !planNameLower.includes("access")) ||
-      (planNameLower.includes("camp") &&
-        !planNameLower.includes("clinic") &&
-        !planNameLower.includes("access"))
+      planDescriptionLower.includes("camp") ||
+      planDescriptionLower.includes("summer")
+    ) {
+      return "Kids Camp";
+    }
+
+    // Fallback to checking plan name
+    if (
+      planNameLower.includes("football") ||
+      planNameLower.includes("clinic") ||
+      planNameLower.includes("session")
+    ) {
+      return "Football Clinic";
+    }
+
+    if (
+      planNameLower.includes("camp") ||
+      planNameLower.includes("day access")
     ) {
       return "Kids Camp";
     }
@@ -90,7 +89,8 @@ export default function PaymentSuccess() {
 
   const planName =
     booking.plan?.name || booking.membershipPlan || "Selected Plan";
-  const planType = getPlanType(planName);
+  const planDescription = booking.plan?.description || "";
+  const planType = getPlanType(planName, planDescription);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
@@ -122,10 +122,6 @@ export default function PaymentSuccess() {
                 <span className="font-medium">
                   {booking.firstName} {booking.lastName}
                 </span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-gray-600">Plan Type:</span>
-                <span className="font-medium text-blue-600">{planType}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Plan:</span>

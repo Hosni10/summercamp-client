@@ -73,52 +73,6 @@ const clinicPlans = {
       ],
     },
   ],
-  alAin: [
-    {
-      name: "1 Day Access",
-      description: "Perfect for trying out our football clinic",
-      price: "150",
-      features: [
-        "Professional coaching",
-        "Skill assessment",
-        "Training equipment provided",
-      ],
-    },
-    {
-      name: "1 Week (3 sessions)",
-      description: "Comprehensive football training program",
-      price: "390",
-      features: [
-        "Professional coaching",
-        "Advanced skill development",
-        "Tactical training",
-        "Progress tracking",
-      ],
-      popular: true,
-    },
-    {
-      name: "Full Month (12 sessions)",
-      description: "Complete football development experience",
-      price: "1440",
-      features: [
-        "Professional coaching",
-        "Match play experience",
-        "Progress tracking",
-        "Performance report",
-      ],
-    },
-    {
-      name: "Full Access (21 sessions)",
-      description: "Ultimate football training experience",
-      price: "2520",
-      features: [
-        "Professional coaching",
-        "Extended training period",
-        "Comprehensive skill development",
-        "Advanced tactical understanding",
-      ],
-    },
-  ],
 };
 
 const clinicActivities = {
