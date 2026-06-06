@@ -174,7 +174,10 @@ const campActivities = {
     "Olympic Challenges",
     "Cycling",
     "Art",
-    "Board Games & more",
+    "Board Games",
+    "Beach Volleyball",
+    "Pickleball",
+    "Combat Sports",
   ],
   cognitive: [],
   competitions: [],
@@ -451,7 +454,7 @@ function KidsCamp() {
                   <div>
                     <h3 className="font-semibold">Age Groups</h3>
                     <p className="text-gray-600">
-                      Ages 4-14, grouped by age for optimal development
+                      Ages 4-13, grouped by age for optimal development and sport preferences.
                     </p>
                   </div>
                 </div>
