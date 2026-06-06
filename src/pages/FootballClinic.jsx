@@ -64,7 +64,7 @@ const clinicPlans = {
     {
       name: "Full Access (21 sessions)",
       description: "Ultimate football training experience",
-      price: "2520",
+      price: "5700",
       features: [
         "Professional coaching",
         "Extended training period",
