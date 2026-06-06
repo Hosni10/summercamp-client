@@ -236,7 +236,7 @@ function KidsCamp() {
       subtitle: "Where Champions Are Made",
       description:
         "Join our comprehensive summer program designed to develop young talents through sports, education, and fun activities.",
-      badge: "Summer 2025 Registration Open",
+      badge: "Summer 2026 Registration Open",
       buttonText: "Book Now",
       buttonAction: "book",
     },
