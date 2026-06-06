@@ -82,7 +82,7 @@ const campPlans = {
     {
       name: "Full Camp Access",
       description: "Unlimited access to all camp days and activities",
-      price: "2,720",
+      price: "5,700",
       features: [
         "Full day camp activities",
         "Unlimited access",
