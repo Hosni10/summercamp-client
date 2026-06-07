@@ -30,64 +30,52 @@ import coachImage from "../assets/coach.jpeg";
 import BookingForm from "../components/BookingForm.jsx";
 import { useNavigate } from "react-router-dom";
 
+const membershipFeatures = [
+  "Full day camp activities",
+  "Professional supervision",
+  "Access to all scheduled sport stations",
+  "Safe & structured environment",
+  "Daily challenges & games",
+];
+
 const campPlans = {
   abuDhabi: [
     {
       name: "1-Day Access",
       description: "Perfect for trying out our summer camp",
       price: "250",
-      features: ["Full day camp activities", "Professional supervision"],
+      features: membershipFeatures,
     },
     {
       name: "3-Days Access",
       description: "Great for a short camp experience",
       price: "650",
-      features: [
-        "Full day camp activities",
-        "Extended skill development",
-        "Progress tracking",
-      ],
+      features: membershipFeatures,
     },
     {
       name: "5-Days Access",
       description: "Complete summer camp experience",
       price: "850",
-      features: [
-        "Full day camp activities",
-        "Full week activities",
-        "Individual attention",
-      ],
+      features: membershipFeatures,
       popular: true,
     },
     {
       name: "10-Days Access",
       description: "Extended camp experience",
       price: "1,600",
-      features: [
-        "Full day camp activities",
-        "Advanced activities",
-        "Special workshops",
-      ],
+      features: membershipFeatures,
     },
     {
       name: "20-Days Access",
       description: "Full summer camp experience",
       price: "3,000",
-      features: [
-        "Full day camp activities",
-        "Complete summer program",
-        "Exclusive activities",
-      ],
+      features: membershipFeatures,
     },
     {
       name: "Full Camp Access",
       description: "Unlimited access to all camp days and activities",
       price: "5,700",
-      features: [
-        "Full day camp activities",
-        "Unlimited access",
-        "Personalized coaching",
-      ],
+      features: membershipFeatures,
       popular: false,
     },
   ],
@@ -108,8 +96,7 @@ const campPlans = {
       description: "1 day access within 1 week (Monday to Thursday)",
       price: "150",
       features: [
-        "Full day camp activities",
-        "Professional supervision",
+        ...membershipFeatures,
         "Valid Monday to Thursday only",
       ],
     },
@@ -118,8 +105,7 @@ const campPlans = {
       description: "4 days access within 1 week (Monday to Thursday)",
       price: "440",
       features: [
-        "Full day camp activities",
-        "Skill development",
+        ...membershipFeatures,
         "Valid Monday to Thursday only",
       ],
       popular: true,
@@ -129,8 +115,7 @@ const campPlans = {
       description: "8 days access within 2 weeks (Monday to Thursday)",
       price: "880",
       features: [
-        "Full day camp activities",
-        "Skill development",
+        ...membershipFeatures,
         "Valid Monday to Thursday only",
       ],
     },
@@ -140,8 +125,7 @@ const campPlans = {
         "16 days access within 1 month (Monday to Thursday each week)",
       price: "1760",
       features: [
-        "Full day camp activities",
-        "Skill development",
+        ...membershipFeatures,
         "Valid Monday to Thursday only",
       ],
     },
@@ -151,8 +135,7 @@ const campPlans = {
         "26 days access for the full camp (Monday to Thursday each week)",
       price: "2860",
       features: [
-        "Full day camp activities",
-        "Skill development",
+        ...membershipFeatures,
         "Valid Monday to Thursday only",
       ],
     },
