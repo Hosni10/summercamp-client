@@ -43,7 +43,7 @@ const campPlans = {
     {
       name: "1-Day Access",
       description: "Perfect for trying out our summer camp",
-      price: "250",
+      price: "3",
       features: membershipFeatures,
     },
     {
