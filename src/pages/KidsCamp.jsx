@@ -334,6 +334,18 @@ function KidsCamp() {
               >
                 {slides[currentSlide].buttonText}
               </Button>
+              {slides[currentSlide].buttonAction === "book" && (
+                <p className="mt-4">
+                  <a
+                    href="https://www.instagram.com/reel/DZMeRJQNY_v/?igsh=dG4wdXl2bW5sZ2Nv"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-white/90 hover:text-white underline underline-offset-4 transition-colors"
+                  >
+                    Inside our camp
+                  </a>
+                </p>
+              )}
             </div>
           </div>
         </div>
