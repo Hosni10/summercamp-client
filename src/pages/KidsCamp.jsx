@@ -475,7 +475,7 @@ function KidsCamp() {
               </div>
             </div>
             <div
-              className="relative rounded-lg overflow-hidden shadow-lg cursor-pointer"
+              className="relative rounded-lg overflow-hidden shadow-lg cursor-pointer bg-white"
               onClick={() =>
                 setModalImg({ src: detailsImage, alt: "Camp Details" })
               }
@@ -483,7 +483,7 @@ function KidsCamp() {
               <img
                 src={detailsImage}
                 alt="Camp Details"
-                className="w-full h-[400px] object-cover hover:opacity-80 transition-opacity"
+                className="w-full h-auto object-contain hover:opacity-80 transition-opacity"
               />
             </div>
           </div>
@@ -516,7 +516,7 @@ function KidsCamp() {
 
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div
-              className="relative rounded-lg overflow-hidden shadow-lg cursor-pointer"
+              className="relative rounded-lg overflow-hidden shadow-lg cursor-pointer bg-white"
               onClick={() =>
                 setModalImg({ src: activitiesImage, alt: "Camp Activities" })
               }
@@ -524,7 +524,7 @@ function KidsCamp() {
               <img
                 src={activitiesImage}
                 alt="Camp Activities"
-                className="w-full h-[400px] object-cover hover:opacity-80 transition-opacity"
+                className="w-full h-auto object-contain hover:opacity-80 transition-opacity"
               />
             </div>
             <div className="space-y-6">

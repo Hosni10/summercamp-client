@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { Button } from "./ui/button.jsx";
 import { MapPin, Phone, Mail } from "lucide-react";
 import afcLogo from "../assets/AFC-Logo.svg";
+import poweredImage from "../assets/powered.jpg";
 
 export default function Layout({ children }) {
   return (
@@ -44,6 +45,17 @@ export default function Layout({ children }) {
 
       {/* Main Content */}
       <main>{children}</main>
+
+      {/* Partners Banner */}
+      <section className="py-8 px-4 sm:px-6 lg:px-8 bg-white">
+        <div className="max-w-7xl mx-auto">
+          <img
+            src={poweredImage}
+            alt="Al Ain Summer Sports partners: ADNOC, ADNEC Group, Abu Dhabi Sports Council"
+            className="w-full h-auto object-contain"
+          />
+        </div>
+      </section>
 
       {/* Contact Section */}
       <section id="contact" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
