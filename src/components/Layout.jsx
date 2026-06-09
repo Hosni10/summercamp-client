@@ -127,7 +127,7 @@ export default function Layout({ children }) {
             </div>
           </div>
           <div className="mt-8 pt-8 border-t border-gray-800 text-center text-gray-400">
-            <p>&copy; 2025 Atomics Football. All rights reserved.</p>
+            <p>&copy; 2026 Atomics Football. All rights reserved.</p>
           </div>
         </div>
       </footer>
