@@ -52,17 +52,6 @@ export default function Layout({ children }) {
                 </Button>
               </Link>
               <Button
-                variant="ghost"
-                className="hover:text-red-600"
-                onClick={() => {
-                  document.getElementById("location").scrollIntoView({
-                    behavior: "smooth",
-                  });
-                }}
-              >
-                Location
-              </Button>
-              <Button
                 onClick={() => {
                   document.getElementById("contact").scrollIntoView({
                     behavior: "smooth",
