@@ -1,20 +1,34 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { Button } from "./ui/button.jsx";
 import { MapPin, Phone, Mail } from "lucide-react";
 import afcLogo from "../assets/AFC-Logo.svg";
 import poweredImage from "../assets/powered.jpg";
 
-const CAMP_LOCATION = {
-  name: "Abu Dhabi Summer Sports (ADSS)",
-  address:
-    "CCCP 574 ADSS (Abu Dhabi Summer Sports) - Al Rawdah - Al Ma'arid - Abu Dhabi",
-  mapsUrl: "https://maps.app.goo.gl/emQPJrYeCzs1wZSF7",
-  embedUrl:
-    "https://www.google.com/maps?q=CCCP+574+ADSS+(Abu+Dhabi+Summer+Sports)+-+Al+Rawdah+-+Al+Ma'arid+-+Abu+Dhabi&output=embed",
+const CAMP_LOCATIONS = {
+  abuDhabi: {
+    city: "Abu Dhabi",
+    name: "Abu Dhabi Summer Sports (ADSS)",
+    address:
+      "CCCP 574 ADSS (Abu Dhabi Summer Sports) - Al Rawdah - Al Ma'arid - Abu Dhabi",
+    mapsUrl: "https://maps.app.goo.gl/emQPJrYeCzs1wZSF7",
+    embedUrl:
+      "https://www.google.com/maps?q=CCCP+574+ADSS+(Abu+Dhabi+Summer+Sports)+-+Al+Rawdah+-+Al+Ma'arid+-+Abu+Dhabi&output=embed",
+  },
+  alAin: {
+    city: "Al Ain",
+    name: "ADNEC Centre Al Ain",
+    address:
+      "ADNEC Centre - Al Mu-atamarat St - Al Jimi - Civic Center - Al Ain",
+    mapsUrl: "https://maps.app.goo.gl/ujmiDdBpSA2FD8Pk9",
+    embedUrl:
+      "https://www.google.com/maps?q=ADNEC+Centre+Al+Ain,+ADNEC+Centre+-+Al+Mu-atamarat+St+-+Al+Jimi+-+Civic+Center+-+Abu+Dhabi&output=embed",
+  },
 };
 
 export default function Layout({ children }) {
+  const [selectedLocation, setSelectedLocation] = useState("abuDhabi");
+  const location = CAMP_LOCATIONS[selectedLocation];
   return (
     <div className="min-h-screen bg-white">
       {/* Header */}
@@ -85,36 +99,64 @@ export default function Layout({ children }) {
               Our Location
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Visit us at Abu Dhabi Summer Sports (ADSS) at ADNEC for Kids Camp
-              and Football Clinic sessions.
+              Visit us at ADNEC in Abu Dhabi or Al Ain for Kids Camp and
+              Football Clinic sessions.
             </p>
           </div>
 
+          <div className="flex justify-center mb-8">
+            <div className="flex bg-gray-100 rounded-lg p-1">
+              <button
+                type="button"
+                className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                  selectedLocation === "abuDhabi"
+                    ? "bg-[#ed3227] text-white"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+                onClick={() => setSelectedLocation("abuDhabi")}
+              >
+                <MapPin className="h-4 w-4 inline mr-2" />
+                Abu Dhabi
+              </button>
+              <button
+                type="button"
+                className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                  selectedLocation === "alAin"
+                    ? "bg-[#ed3227] text-white"
+                    : "text-gray-600 hover:text-gray-900"
+                }`}
+                onClick={() => setSelectedLocation("alAin")}
+              >
+                <MapPin className="h-4 w-4 inline mr-2" />
+                Al Ain
+              </button>
+            </div>
+          </div>
+
           <div className="grid lg:grid-cols-2 gap-8 items-start">
-            <div className="space-y-6">
-              <div className="flex items-start space-x-4 bg-white rounded-lg p-6 shadow-sm">
-                <MapPin className="h-8 w-8 text-red-600 shrink-0 mt-1" />
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                    {CAMP_LOCATION.name}
-                  </h3>
-                  <p className="text-gray-600 mb-4">{CAMP_LOCATION.address}</p>
-                  <a
-                    href={CAMP_LOCATION.mapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex items-center text-red-600 hover:text-red-700 font-medium"
-                  >
-                    Open in Google Maps →
-                  </a>
-                </div>
+            <div className="flex items-start space-x-4 bg-white rounded-lg p-6 shadow-sm">
+              <MapPin className="h-8 w-8 text-red-600 shrink-0 mt-1" />
+              <div>
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  {location.name}
+                </h3>
+                <p className="text-gray-600 mb-4">{location.address}</p>
+                <a
+                  href={location.mapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center text-red-600 hover:text-red-700 font-medium"
+                >
+                  Open in Google Maps →
+                </a>
               </div>
             </div>
 
             <div className="rounded-lg overflow-hidden shadow-lg h-[350px] lg:h-[400px]">
               <iframe
-                title="Abu Dhabi Summer Sports location"
-                src={CAMP_LOCATION.embedUrl}
+                key={selectedLocation}
+                title={`${location.city} camp location`}
+                src={location.embedUrl}
                 className="w-full h-full border-0"
                 allowFullScreen
                 loading="lazy"
@@ -145,14 +187,19 @@ export default function Layout({ children }) {
             <div className="flex flex-col items-center space-y-2">
               <MapPin className="h-8 w-8 text-orange-600" />
               <h3 className="font-semibold">Visit Us</h3>
-              <a
-                href={CAMP_LOCATION.mapsUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-gray-600 hover:text-red-600 transition-colors"
-              >
-                ADNEC, Abu Dhabi Summer Sports, UAE
-              </a>
+              <div className="text-gray-600 space-y-1">
+                {Object.values(CAMP_LOCATIONS).map((loc) => (
+                  <a
+                    key={loc.city}
+                    href={loc.mapsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block hover:text-red-600 transition-colors"
+                  >
+                    {loc.city}: {loc.name}
+                  </a>
+                ))}
+              </div>
             </div>
           </div>
         </div>
@@ -195,16 +242,18 @@ export default function Layout({ children }) {
               <ul className="space-y-2 text-gray-400">
                 <li>Email: info@atomicsfootball.com</li>
                 <li>Phone: +971 50 333 1468</li>
-                <li>
-                  <a
-                    href={CAMP_LOCATION.mapsUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="hover:text-red-400"
-                  >
-                    {CAMP_LOCATION.address}
-                  </a>
-                </li>
+                {Object.values(CAMP_LOCATIONS).map((loc) => (
+                  <li key={loc.city}>
+                    <a
+                      href={loc.mapsUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="hover:text-red-400"
+                    >
+                      {loc.city}: {loc.address}
+                    </a>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
