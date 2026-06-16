@@ -119,6 +119,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     "0dis2": 20,
     "ADQ20@ADSS2025": 32.73,
     ad20nec: 20,
+    Ad20noc: 20,
     "1ADNOC5": 15,
     "Adnecstaff20@adss2025": 32.73,
     "20Kuwaiti": 22.08,
