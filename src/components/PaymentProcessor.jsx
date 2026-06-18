@@ -389,9 +389,9 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
           "16 days access within 1 month (Monday to Thursday each week)";
       } else if (planName.toLowerCase().includes("full camp")) {
         end = new Date(start);
-        end.setDate(start.getDate() + 25); // 26 days: 6.5x Mon-Thu
+        end.setDate(start.getDate() + 28); // 29 days: 7.25x Mon-Thu
         description =
-          "26 days access for the full camp (Monday to Thursday each week)";
+          "29 days access for the full camp (Monday to Thursday each week)";
       } else {
         end = start;
         description =
