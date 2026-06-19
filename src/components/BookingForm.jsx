@@ -45,16 +45,10 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const [showPayment, setShowPayment] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Set default start date based on plan description and location
+  // Set default start date when plan or location changes
   useEffect(() => {
     if (selectedPlan) {
-      if (selectedLocation === "alAin") {
-        setFormData((prev) => ({ ...prev, startDate: "2026-07-01" }));
-      } else {
-        const isCamp = selectedPlan.description?.toLowerCase().includes("camp");
-        const defaultStartDate = isCamp ? "2026-07-01" : "2026-07-01";
-        setFormData((prev) => ({ ...prev, startDate: defaultStartDate }));
-      }
+      setFormData((prev) => ({ ...prev, startDate: "2026-07-01" }));
     }
   }, [selectedPlan, selectedLocation]);
 
@@ -847,11 +841,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                   <Input
                     id="startDate"
                     type="date"
-                    min={
-                      selectedPlan?.description?.toLowerCase().includes("camp")
-                        ? "2026-07-01"
-                        : "2026-07-07"
-                    }
+                    min="2026-07-01"
                     max="2026-08-23"
                     value={formData.startDate}
                     onChange={(e) =>
