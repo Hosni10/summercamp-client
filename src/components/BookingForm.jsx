@@ -25,6 +25,8 @@ import axios from "axios";
 import PaymentProcessor from "./PaymentProcessor.jsx";
 import { toast, Toaster } from "sonner";
 
+const DISCOUNT_CODES_ENABLED = false;
+
 const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -89,7 +91,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     const basePrice = parseInt(selectedPlan.price.replace(/,/g, "")) || 0;
 
     // If a discount code is applied, apply it to all children
-    if (appliedDiscount > 0) {
+    if (DISCOUNT_CODES_ENABLED && appliedDiscount > 0) {
       const discountAmount = (basePrice * appliedDiscount) / 100;
       return Math.round((basePrice - discountAmount) * 10) / 10;
     }
@@ -122,6 +124,12 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   };
 
   const handleApplyDiscount = () => {
+    if (!DISCOUNT_CODES_ENABLED) {
+      setAppliedDiscount(0);
+      setDiscountError("Discount codes are currently unavailable");
+      return;
+    }
+
     const code = discountCode.trim();
 
     if (discountCodes[code]) {
@@ -411,13 +419,16 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
 
     // Determine discount type for backend
     let discountType = "";
-    if (discountCode === "ADQ20@ADSS2025") {
+    if (DISCOUNT_CODES_ENABLED && discountCode === "ADQ20@ADSS2025") {
       discountType = "adq employees";
-    } else if (discountCode === "ad20nec") {
+    } else if (DISCOUNT_CODES_ENABLED && discountCode === "ad20nec") {
       discountType = "adnec employees";
-    } else if (discountCode === "Adnecstaff20@adss2025") {
+    } else if (
+      DISCOUNT_CODES_ENABLED &&
+      discountCode === "Adnecstaff20@adss2025"
+    ) {
       discountType = "adnec staff";
-    } else if (appliedDiscount > 0) {
+    } else if (DISCOUNT_CODES_ENABLED && appliedDiscount > 0) {
       discountType = "normal";
     }
 
@@ -432,9 +443,12 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
         finalTotal,
       },
       paymentId: paymentResult.paymentId,
-      discountCode: appliedDiscount > 0 ? discountCode : "",
-      discountPercent: appliedDiscount > 0 ? appliedDiscount : 0,
-      discountType: appliedDiscount > 0 ? discountType : "",
+      discountCode:
+        DISCOUNT_CODES_ENABLED && appliedDiscount > 0 ? discountCode : "",
+      discountPercent:
+        DISCOUNT_CODES_ENABLED && appliedDiscount > 0 ? appliedDiscount : 0,
+      discountType:
+        DISCOUNT_CODES_ENABLED && appliedDiscount > 0 ? discountType : "",
     };
 
     try {
@@ -685,48 +699,59 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
               </div>
             </div>
 
-            {/* Discount Code */}
+            {/* Discount Code / Sibling Discount Info */}
             <div>
-              <Label htmlFor="discountCode">Discount Code</Label>
-              <div className="flex gap-2 items-center">
-                <Input
-                  id="discountCode"
-                  placeholder="Enter discount code"
-                  value={discountCode}
-                  onChange={(e) => setDiscountCode(e.target.value)}
-                  className="w-48"
-                />
-                <Button
-                  type="button"
-                  onClick={handleApplyDiscount}
-                  variant="outline"
-                >
-                  Apply
-                </Button>
-                {appliedDiscount > 0 && (
-                  <Button
-                    type="button"
-                    onClick={handleClearDiscount}
-                    variant="outline"
-                    className="text-red-600 hover:text-red-700"
-                  >
-                    Clear
-                  </Button>
-                )}
-              </div>
-              {numChildren > 1 && appliedDiscount === 0 && (
-                <p className="text-blue-600 text-sm mt-1">
-                  💡 Sibling discounts apply automatically: 2nd child 10% off,
-                  3rd child 15% off, 4th child 20% off
-                </p>
-              )}
-              {discountError && (
-                <p className="text-red-500 text-sm mt-1">{discountError}</p>
-              )}
-              {appliedDiscount > 0 && !discountError && (
-                <p className="text-green-600 text-sm mt-1">
-                  {appliedDiscount}% discount applied to all children!
-                </p>
+              {DISCOUNT_CODES_ENABLED ? (
+                <>
+                  <Label htmlFor="discountCode">Discount Code</Label>
+                  <div className="flex gap-2 items-center">
+                    <Input
+                      id="discountCode"
+                      placeholder="Enter discount code"
+                      value={discountCode}
+                      onChange={(e) => setDiscountCode(e.target.value)}
+                      className="w-48"
+                    />
+                    <Button
+                      type="button"
+                      onClick={handleApplyDiscount}
+                      variant="outline"
+                    >
+                      Apply
+                    </Button>
+                    {appliedDiscount > 0 && (
+                      <Button
+                        type="button"
+                        onClick={handleClearDiscount}
+                        variant="outline"
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        Clear
+                      </Button>
+                    )}
+                  </div>
+                  {numChildren > 1 && appliedDiscount === 0 && (
+                    <p className="text-blue-600 text-sm mt-1">
+                      💡 Sibling discounts apply automatically: 2nd child 10%
+                      off, 3rd child 15% off, 4th child 20% off
+                    </p>
+                  )}
+                  {discountError && (
+                    <p className="text-red-500 text-sm mt-1">{discountError}</p>
+                  )}
+                  {appliedDiscount > 0 && !discountError && (
+                    <p className="text-green-600 text-sm mt-1">
+                      {appliedDiscount}% discount applied to all children!
+                    </p>
+                  )}
+                </>
+              ) : (
+                numChildren > 1 && (
+                  <p className="text-blue-600 text-sm">
+                    💡 Sibling discounts apply automatically: 2nd child 10% off,
+                    3rd child 15% off, 4th child 20% off
+                  </p>
+                )
               )}
             </div>
 
