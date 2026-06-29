@@ -25,7 +25,7 @@ import axios from "axios";
 import PaymentProcessor from "./PaymentProcessor.jsx";
 import { toast, Toaster } from "sonner";
 
-const DISCOUNT_CODES_ENABLED = false;
+const DISCOUNT_CODES_ENABLED = true;
 
 const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const navigate = useNavigate();
