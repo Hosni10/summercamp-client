@@ -122,6 +122,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     "20Kuwaiti": 22.08,
     "POD50@ADSS2025": 50,
     "vipdis15": 15,
+    adic100: 100,
   };
 
   const handleApplyDiscount = () => {
@@ -409,6 +410,17 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
       return;
     }
 
+    if (finalTotal <= 0) {
+      try {
+        await handlePaymentSuccess({
+          paymentId: `FREE-${discountCode.trim() || "discount"}-${Date.now()}`,
+        });
+      } catch {
+        // handlePaymentSuccess already shows an error toast
+      }
+      return;
+    }
+
     // Don't save booking here - only save after successful payment
     // Just proceed to payment
     setShowPayment(true);
@@ -416,7 +428,11 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
 
   const handlePaymentSuccess = async (paymentResult) => {
     setIsSubmitting(true);
-    toast.success("Payment successful! Saving your booking...");
+    toast.success(
+      finalTotal <= 0
+        ? "Booking confirmed! Saving your registration..."
+        : "Payment successful! Saving your booking..."
+    );
 
     // Determine discount type for backend
     let discountType = "";
@@ -954,7 +970,9 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit">Proceed to Payment</Button>
+              <Button type="submit" disabled={isSubmitting}>
+                {finalTotal <= 0 ? "Complete Booking" : "Proceed to Payment"}
+              </Button>
             </div>
           </form>
         </div>
