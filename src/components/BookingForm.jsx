@@ -23,6 +23,7 @@ import {
 } from "date-fns";
 import axios from "axios";
 import PaymentProcessor from "./PaymentProcessor.jsx";
+import { fetchWithTimeout } from "../lib/stripe.js";
 import { toast, Toaster } from "sonner";
 
 const DISCOUNT_CODES_ENABLED = true;
@@ -452,29 +453,22 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     };
 
     try {
+      const serverUrl =
+        import.meta.env.VITE_SERVER_URL || "http://localhost:5000";
       console.log("Payment successful, saving booking...");
-      console.log(
-        "API URL:",
-        `${
-          import.meta.env.VITE_SERVER_URL || "http://localhost:5000"
-        }/api/bookings`
-      );
-      const response = await fetch(
-        `${
-          import.meta.env.VITE_SERVER_URL || "http://localhost:5000"
-        }/api/bookings`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(bookingPayload),
-        }
-      );
+      console.log("API URL:", `${serverUrl}/api/bookings`);
+
+      const response = await fetchWithTimeout(`${serverUrl}/api/bookings`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(bookingPayload),
+      });
 
       const savedBookingResult = await response.json();
 
-      if (!savedBookingResult.success) {
+      if (!response.ok || !savedBookingResult.success) {
         throw new Error(
           savedBookingResult.message || "Failed to save booking."
         );
@@ -508,6 +502,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
         `Your payment was successful, but we failed to save your booking. Please contact support. Error: ${error.message}`
       );
       setIsSubmitting(false);
+      throw error;
     }
   };
 

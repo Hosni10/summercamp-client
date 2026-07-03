@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Elements,
   CardElement,
@@ -46,10 +46,12 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
   const stripe = useStripe();
   const elements = useElements();
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isSavingBooking, setIsSavingBooking] = useState(false);
   const [paymentError, setPaymentError] = useState(null);
   const [clientSecret, setClientSecret] = useState(null);
   const [isStripeReady, setIsStripeReady] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
+  const lastPaymentResultRef = useRef(null);
 
   useEffect(() => {
     if (stripe && elements) {
@@ -112,6 +114,31 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
       }
     };
     initializePayment();
+  };
+
+  const saveBookingAfterPayment = async (paymentResult) => {
+    lastPaymentResultRef.current = paymentResult;
+    setIsSavingBooking(true);
+    setPaymentError(null);
+
+    try {
+      await onSuccess(paymentResult);
+    } catch (error) {
+      console.error("Failed to save booking after payment:", error);
+      setIsSavingBooking(false);
+      setIsProcessing(false);
+      setPaymentError(
+        `Payment succeeded, but we could not save your booking. Payment ID: ${paymentResult.paymentId}. ${error.message || "Please try again or contact support."}`
+      );
+    }
+  };
+
+  const handleRetrySave = async () => {
+    if (!lastPaymentResultRef.current || isSavingBooking) {
+      return;
+    }
+
+    await saveBookingAfterPayment(lastPaymentResultRef.current);
   };
 
   const handleSubmit = async (event) => {
@@ -180,13 +207,11 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
         }
       } else if (paymentIntent && paymentIntent.status === "succeeded") {
         console.log("Payment succeeded:", paymentIntent);
-        console.log("Calling onSuccess from PaymentForm");
-        onSuccess({
+        await saveBookingAfterPayment({
           paymentId: paymentIntent.id,
           amount: paymentIntent.amount,
           currency: paymentIntent.currency,
         });
-        console.log("onSuccess called from PaymentForm");
       } else {
         console.error(
           "Payment intent status unexpected:",
@@ -202,12 +227,10 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
       setPaymentError("An unexpected error occurred. Please try again.");
       setIsProcessing(false);
       onError(error);
-      return;
-    } finally {
-      // Only set isProcessing to false if payment did not succeed
-      // If payment succeeded, the modal will close and form will unmount
     }
   };
+
+  const paymentAlreadySucceeded = !!lastPaymentResultRef.current;
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -240,7 +263,17 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
               <AlertCircle className="h-4 w-4" />
               <span>{paymentError}</span>
             </div>
-            {paymentError.includes("expired") && (
+            {lastPaymentResultRef.current ? (
+              <Button
+                type="button"
+                onClick={handleRetrySave}
+                disabled={isSavingBooking}
+                className="text-xs bg-blue-600 hover:bg-blue-700 text-white"
+                size="sm"
+              >
+                Retry Saving Booking
+              </Button>
+            ) : paymentError.includes("expired") ? (
               <Button
                 type="button"
                 onClick={resetPayment}
@@ -249,7 +282,7 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
               >
                 Retry Payment
               </Button>
-            )}
+            ) : null}
           </div>
         )}
       </div>
@@ -284,7 +317,7 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
           type="button"
           variant="outline"
           onClick={onCancel}
-          disabled={isProcessing}
+          disabled={isProcessing || isSavingBooking}
           className="flex-1"
         >
           Cancel
@@ -292,7 +325,12 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
         <Button
           type="submit"
           disabled={
-            !isStripeReady || isProcessing || !clientSecret || isInitializing
+            !isStripeReady ||
+            isProcessing ||
+            isSavingBooking ||
+            !clientSecret ||
+            isInitializing ||
+            paymentAlreadySucceeded
           }
           className="flex-1 bg-blue-600 hover:bg-blue-700"
         >
@@ -301,11 +339,18 @@ const PaymentForm = ({ bookingData, onSuccess, onError, onCancel }) => {
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               Initializing...
             </div>
+          ) : isSavingBooking ? (
+            <div className="flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Saving booking...
+            </div>
           ) : isProcessing ? (
             <div className="flex items-center gap-2">
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               Processing...
             </div>
+          ) : paymentAlreadySucceeded ? (
+            "Payment Complete"
           ) : (
             `Pay AED ${
               bookingData?.pricing?.finalTotal ?? bookingData.plan.price
@@ -341,13 +386,13 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
   }, []);
 
   const handlePaymentSuccess = (result) => {
-    // Just call the parent's onSuccess callback - let the parent handle everything
     if (typeof onSuccess === "function") {
       console.log("Calling parent onSuccess callback");
-      onSuccess(result);
-    } else {
-      console.error("onSuccess is not a function!");
+      return onSuccess(result);
     }
+
+    console.error("onSuccess is not a function!");
+    return Promise.reject(new Error("Payment handler is not configured."));
   };
 
   const handlePaymentError = (error) => {
