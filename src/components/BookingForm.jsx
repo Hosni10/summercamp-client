@@ -612,9 +612,10 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                   Registration is not valid before 13th July
                 </p>
                 <p className="text-amber-700 text-xs mt-0.5 leading-relaxed">
-                  This week's camp is fully booked. Please select a start date
-                  from <span className="font-semibold">13th July</span> onwards
-                  to secure your place.
+                  Due to overwhelming demand, this week's camp is fully booked.
+                  Please select a start date from{" "}
+                  <span className="font-semibold">13th July</span> onwards to
+                  secure your place.
                 </p>
               </div>
             </div>
