@@ -48,10 +48,24 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const [showPayment, setShowPayment] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const isAbuDhabi = selectedLocation !== "alAin";
+  const abuDhabiNewStartDate = "2026-07-13";
+  const abuDhabiFullyBookedCutoff = new Date("2026-07-13T00:00:00");
+
+  const planName = selectedPlan?.name || "";
+  const isShortTermPlan =
+    /^(1-?day|3-?days?|5-?days?)/i.test(planName) ||
+    planName === "1 Day Access";
+
+  const isAbuDhabiFullyBooked =
+    isAbuDhabi && new Date() < abuDhabiFullyBookedCutoff && isShortTermPlan;
+
   // Set default start date when plan or location changes
   useEffect(() => {
     if (selectedPlan) {
-      setFormData((prev) => ({ ...prev, startDate: "2026-07-01" }));
+      const defaultDate =
+        selectedLocation !== "alAin" ? abuDhabiNewStartDate : "2026-07-01";
+      setFormData((prev) => ({ ...prev, startDate: defaultDate }));
     }
   }, [selectedPlan, selectedLocation]);
 
@@ -555,6 +569,74 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     },
   };
 
+  if (isAbuDhabiFullyBooked) {
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+        <div className="bg-white rounded-2xl max-w-lg w-full shadow-2xl overflow-hidden">
+          <div className="bg-red-600 px-6 py-5 flex justify-between items-start">
+            <div className="flex items-center gap-3">
+              <div className="bg-white/20 rounded-full p-2">
+                <Calendar className="h-6 w-6 text-white" />
+              </div>
+              <h2 className="text-white text-xl font-bold">
+                Registration Closed
+              </h2>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={onClose}
+              className="text-white hover:bg-white/20 -mt-1 -mr-2"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+
+          <div className="px-6 py-8 space-y-5">
+            <div className="bg-red-50 border border-red-200 rounded-xl p-5 space-y-2">
+              <p className="text-red-800 font-semibold text-lg leading-snug">
+                This week's camp is now fully booked. Registration is closed.
+              </p>
+              <p className="text-red-700 text-sm leading-relaxed">
+                Due to overwhelming demand, no further registrations can be
+                accepted for this week.
+              </p>
+            </div>
+
+            <div className="bg-blue-50 border border-blue-200 rounded-xl p-5">
+              <div className="flex items-start gap-3">
+                <div className="bg-blue-600 rounded-full p-1.5 mt-0.5 shrink-0">
+                  <Calendar className="h-4 w-4 text-white" />
+                </div>
+                <div>
+                  <p className="text-blue-900 font-semibold text-base">
+                    Next Available Week — Starting 13th July
+                  </p>
+                  <p className="text-blue-700 text-sm mt-1 leading-relaxed">
+                    Secure your place for the week starting{" "}
+                    <span className="font-semibold">13th July</span> before all
+                    remaining spots are filled.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 pt-1">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={onClose}
+                className="flex-1"
+              >
+                Close
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (showPayment) {
     return (
       <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
@@ -878,7 +960,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                   <Input
                     id="startDate"
                     type="date"
-                    min="2026-07-01"
+                    min={isAbuDhabi ? abuDhabiNewStartDate : "2026-07-01"}
                     max="2026-08-23"
                     value={formData.startDate}
                     onChange={(e) =>
