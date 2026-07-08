@@ -155,6 +155,7 @@ export default function PaymentSuccess() {
             </h3>
             <div className="space-y-2 text-sm text-blue-700">
               <p>✅ Payment processed successfully</p>
+              <p>📍 Drop off and pick up is at Hall 8 Pitch 5</p>
               <p>📝 Complete the consent form (required)</p>
               <p>📧 Confirmation email sent to {booking.parentEmail}</p>
               <p>🎯 Ready for your {planType.toLowerCase()} experience!</p>
