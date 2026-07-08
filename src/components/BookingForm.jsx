@@ -28,6 +28,16 @@ import { toast, Toaster } from "sonner";
 
 const DISCOUNT_CODES_ENABLED = true;
 
+const WEEKDAYS_ABU_DHABI = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"];
+const WEEKDAYS_AL_AIN = ["Monday", "Tuesday", "Wednesday", "Thursday"];
+
+const getRequiredDayCount = (planName = "") => {
+  const n = planName.toLowerCase();
+  if (n.includes("1-day") || n.includes("1 day")) return 1;
+  if (n.includes("3-days") || n.includes("3 days")) return 3;
+  return null;
+};
+
 const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -39,10 +49,12 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     numberOfChildren: 1,
     children: [{ name: "", dateOfBirth: "", gender: "" }],
     startDate: "",
+    selectedDays: [],
   });
   const [discountCode, setDiscountCode] = useState("");
   const [discountError, setDiscountError] = useState("");
   const [appliedDiscount, setAppliedDiscount] = useState(0); // percent
+  const [appliedDiscountCode, setAppliedDiscountCode] = useState("");
 
   const [errors, setErrors] = useState({});
   const [showPayment, setShowPayment] = useState(false);
@@ -55,12 +67,12 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const showAbuDhabiNotice =
     isAbuDhabi && new Date() < abuDhabiFullyBookedCutoff;
 
-  // Set default start date when plan or location changes
+  // Set default start date and reset day selection when plan or location changes
   useEffect(() => {
     if (selectedPlan) {
       const defaultDate =
         selectedLocation !== "alAin" ? abuDhabiNewStartDate : "2026-07-01";
-      setFormData((prev) => ({ ...prev, startDate: defaultDate }));
+      setFormData((prev) => ({ ...prev, startDate: defaultDate, selectedDays: [] }));
     }
   }, [selectedPlan, selectedLocation]);
 
@@ -127,7 +139,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     ad20nec: 20,
     Ad20noc: 20,
     "1ADNOC5": 15,
-    "1Mubadala5": 15,
+    "1mubadala5": 19.05,
     "Adnecstaff20@adss2025": 32.73,
     "20Kuwaiti": 22.08,
     "POD50@ADSS2025": 50,
@@ -143,18 +155,24 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     }
 
     const code = discountCode.trim();
+    const matchedKey = Object.keys(discountCodes).find(
+      (key) => key.toLowerCase() === code.toLowerCase()
+    );
 
-    if (discountCodes[code]) {
-      setAppliedDiscount(discountCodes[code]);
+    if (matchedKey) {
+      setAppliedDiscount(discountCodes[matchedKey]);
+      setAppliedDiscountCode(matchedKey);
       setDiscountError("");
     } else {
       setAppliedDiscount(0);
+      setAppliedDiscountCode("");
       setDiscountError("Invalid discount code");
     }
   };
 
   const handleClearDiscount = () => {
     setAppliedDiscount(0);
+    setAppliedDiscountCode("");
     setDiscountCode("");
     setDiscountError("");
   };
@@ -180,6 +198,27 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   // Add 5% tax to the discounted total
   const taxAmount = Math.round(discountedTotal * 0.05 * 10) / 10;
   const finalTotal = Math.round((discountedTotal + taxAmount) * 10) / 10;
+
+  const requiredDayCount = getRequiredDayCount(selectedPlan?.name);
+  const weekdayOptions = isAbuDhabi ? WEEKDAYS_ABU_DHABI : WEEKDAYS_AL_AIN;
+
+  const handleDayToggle = (day) => {
+    const current = formData.selectedDays;
+    if (current.includes(day)) {
+      const updated = current.filter((d) => d !== day);
+      setFormData({ ...formData, selectedDays: updated });
+      const newErrors = { ...errors };
+      delete newErrors.selectedDays;
+      setErrors(newErrors);
+    } else {
+      if (requiredDayCount !== null && current.length >= requiredDayCount) return;
+      const updated = [...current, day];
+      setFormData({ ...formData, selectedDays: updated });
+      const newErrors = { ...errors };
+      delete newErrors.selectedDays;
+      setErrors(newErrors);
+    }
+  };
 
   const validateForm = () => {
     const errors = {};
@@ -207,6 +246,10 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
       errors.parentAddress = "Address is required";
     if (!formData.startDate) errors.startDate = "Start date is required";
     if (!selectedPlan) errors.plan = "Please select a plan";
+
+    if (requiredDayCount !== null && formData.selectedDays.length !== requiredDayCount) {
+      errors.selectedDays = `Please select exactly ${requiredDayCount} day${requiredDayCount > 1 ? "s" : ""}`;
+    }
 
     // Email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -476,6 +519,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
         DISCOUNT_CODES_ENABLED && appliedDiscount > 0 ? appliedDiscount : 0,
       discountType:
         DISCOUNT_CODES_ENABLED && appliedDiscount > 0 ? discountType : "",
+      selectedDays: formData.selectedDays,
     };
 
     try {
@@ -562,6 +606,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
       taxAmount,
       finalTotal,
     },
+    selectedDays: formData.selectedDays,
   };
 
   if (showPayment) {
@@ -780,7 +825,9 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                   )}
                   {appliedDiscount > 0 && !discountError && (
                     <p className="text-green-600 text-sm mt-1">
-                      {appliedDiscount}% discount applied to all children!
+                      {appliedDiscountCode.toLowerCase() === "1mubadala5"
+                        ? "Mubadala Discount Applied"
+                        : `${appliedDiscount}% discount applied to all children!`}
                     </p>
                   )}
                 </>
@@ -918,6 +965,55 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                     </p>
                   )}
                 </div>
+
+                {requiredDayCount !== null && (
+                  <div>
+                    <Label>
+                      Which days will your child attend?{" "}
+                      <span className="text-gray-500 font-normal text-sm">
+                        (Select exactly {requiredDayCount} day{requiredDayCount > 1 ? "s" : ""})
+                      </span>
+                    </Label>
+                    <p className="text-xs text-gray-500 mb-2">
+                      Choose the specific weekdays your child will come to camp during the membership period. Saturday and Sunday are off.
+                    </p>
+                    <div className="flex flex-wrap gap-2 mt-1">
+                      {weekdayOptions.map((day) => {
+                        const isSelected = formData.selectedDays.includes(day);
+                        const isDisabled =
+                          !isSelected &&
+                          formData.selectedDays.length >= requiredDayCount;
+                        return (
+                          <button
+                            key={day}
+                            type="button"
+                            disabled={isDisabled}
+                            onClick={() => handleDayToggle(day)}
+                            className={`px-4 py-2 rounded-full border text-sm font-medium transition-colors ${
+                              isSelected
+                                ? "bg-blue-600 text-white border-blue-600"
+                                : isDisabled
+                                ? "bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed"
+                                : "bg-white text-gray-700 border-gray-300 hover:border-blue-400 hover:text-blue-600"
+                            }`}
+                          >
+                            {day}
+                          </button>
+                        );
+                      })}
+                    </div>
+                    {formData.selectedDays.length > 0 && (
+                      <p className="text-sm text-blue-600 mt-2">
+                        Selected: {formData.selectedDays.join(", ")} ({formData.selectedDays.length}/{requiredDayCount})
+                      </p>
+                    )}
+                    {errors.selectedDays && (
+                      <p className="text-red-500 text-sm mt-1">
+                        {errors.selectedDays}
+                      </p>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
 

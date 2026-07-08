@@ -137,6 +137,14 @@ export default function PaymentSuccess() {
                     "0"}
                 </span>
               </div>
+              {booking.selectedDays && booking.selectedDays.length > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Attending Days:</span>
+                  <span className="font-medium">
+                    {booking.selectedDays.join(", ")}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 

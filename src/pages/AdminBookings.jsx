@@ -71,6 +71,7 @@ function AdminBookings() {
       "Start Date",
       "Expiry Date",
       "Plan",
+      "Attending Days",
       "Location",
       "Total Amount",
       "Booking Date",
@@ -92,6 +93,7 @@ function AdminBookings() {
       booking.startDate,
       booking.expiryDate || "N/A",
       booking.membershipPlan,
+      (booking.selectedDays || []).join(", ") || "N/A",
       booking.location,
       booking.totalAmountPaid,
       new Date(booking.createdAt).toLocaleDateString(),
@@ -272,6 +274,10 @@ function AdminBookings() {
                   <div>
                     <span className="font-medium">Expiry Date:</span>{" "}
                     {booking.expiryDate || "N/A"}
+                  </div>
+                  <div>
+                    <span className="font-medium">Attending Days:</span>{" "}
+                    {(booking.selectedDays || []).join(", ") || "N/A"}
                   </div>
                   <div>
                     <span className="font-medium">Children Names:</span>{" "}
