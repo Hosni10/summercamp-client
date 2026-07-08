@@ -177,6 +177,9 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     setDiscountError("");
   };
 
+  const isMubadalaDiscount =
+    appliedDiscountCode.toLowerCase() === "1mubadala5";
+
   // Calculate individual child prices
   const childPrices = [];
   let totalAmount = 0;
@@ -825,7 +828,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                   )}
                   {appliedDiscount > 0 && !discountError && (
                     <p className="text-green-600 text-sm mt-1">
-                      {appliedDiscountCode.toLowerCase() === "1mubadala5"
+                      {isMubadalaDiscount
                         ? "Mubadala Discount Applied"
                         : `${appliedDiscount}% discount applied to all children!`}
                     </p>
@@ -1023,8 +1026,14 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
               {appliedDiscount > 0 && (
                 <div className="bg-blue-50 border border-blue-200 p-3 rounded-lg">
                   <p className="text-blue-800 text-sm">
-                    💡 Discount code applied: {appliedDiscount}% off for all
-                    children
+                    {isMubadalaDiscount ? (
+                      <>💡 Mubadala Discount Applied</>
+                    ) : (
+                      <>
+                        💡 Discount code applied: {appliedDiscount}% off for all
+                        children
+                      </>
+                    )}
                   </p>
                 </div>
               )}
@@ -1055,7 +1064,11 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                 )}
                 {appliedDiscount > 0 && (
                   <div className="flex justify-between text-blue-600">
-                    <span>Discount Code ({appliedDiscount}%):</span>
+                    <span>
+                      {isMubadalaDiscount
+                        ? "Mubadala Discount:"
+                        : `Discount Code (${appliedDiscount}%):`}
+                    </span>
                     <span>
                       -AED {Math.round((originalTotal - totalAmount) * 10) / 10}
                     </span>
