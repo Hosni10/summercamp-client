@@ -1,5 +1,5 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout.jsx";
 import KidsCamp from "./pages/KidsCamp.jsx";
 import FootballClinic from "./pages/FootballClinic.jsx";
@@ -7,6 +7,7 @@ import ParentConsentForm from "./pages/ParentConsentForm.jsx";
 import PaymentSuccess from "./pages/PaymentSuccess.jsx";
 import PaymentError from "./pages/PaymentError.jsx";
 import NotFound from "./pages/NotFound.jsx";
+import { FOOTBALL_CLINIC_ENABLED } from "./config/features.js";
 import "./App.css";
 
 function App() {
@@ -32,9 +33,13 @@ function App() {
         <Route
           path="/football-clinic"
           element={
-            <Layout>
-              <FootballClinic />
-            </Layout>
+            FOOTBALL_CLINIC_ENABLED ? (
+              <Layout>
+                <FootballClinic />
+              </Layout>
+            ) : (
+              <Navigate to="/" replace />
+            )
           }
         />
         <Route path="/parent-consent" element={<ParentConsentForm />} />

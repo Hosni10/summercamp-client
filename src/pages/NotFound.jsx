@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "../components/ui/card.jsx";
 import { Home, Search, ArrowLeft } from "lucide-react";
+import { FOOTBALL_CLINIC_ENABLED } from "../config/features.js";
 
 export default function NotFound() {
   const navigate = useNavigate();
@@ -92,7 +93,9 @@ export default function NotFound() {
             {/* Quick Links */}
             <div className="border-t pt-4">
               <h4 className="font-medium text-gray-800 mb-2">Quick Links</h4>
-              <div className="grid grid-cols-2 gap-2">
+              <div
+                className={`grid gap-2 ${FOOTBALL_CLINIC_ENABLED ? "grid-cols-2" : "grid-cols-1"}`}
+              >
                 <Button
                   variant="ghost"
                   size="sm"
@@ -101,14 +104,16 @@ export default function NotFound() {
                 >
                   Kids Camp
                 </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => navigate("/football-clinic")}
-                  className="text-sm"
-                >
-                  Football Clinic
-                </Button>
+                {FOOTBALL_CLINIC_ENABLED && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => navigate("/football-clinic")}
+                    className="text-sm"
+                  >
+                    Football Clinic
+                  </Button>
+                )}
               </div>
             </div>
           </CardContent>

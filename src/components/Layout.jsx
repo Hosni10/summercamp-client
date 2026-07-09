@@ -4,6 +4,7 @@ import { Button } from "./ui/button.jsx";
 import { MapPin, Phone, Mail } from "lucide-react";
 import afcLogo from "../assets/AFC-Logo.svg";
 import poweredImage from "../assets/powered.jpg";
+import { FOOTBALL_CLINIC_ENABLED } from "../config/features.js";
 
 const CAMP_LOCATIONS = {
   abuDhabi: {
@@ -46,11 +47,13 @@ export default function Layout({ children }) {
                   Kids Camp
                 </Button>
               </Link>
-              <Link to="/football-clinic">
-                <Button variant="ghost" className="hover:text-red-600">
-                  Football Clinic
-                </Button>
-              </Link>
+              {FOOTBALL_CLINIC_ENABLED && (
+                <Link to="/football-clinic">
+                  <Button variant="ghost" className="hover:text-red-600">
+                    Football Clinic
+                  </Button>
+                </Link>
+              )}
               <Button
                 onClick={() => {
                   document.getElementById("contact").scrollIntoView({
@@ -88,8 +91,7 @@ export default function Layout({ children }) {
               Our Location
             </h2>
             <p className="text-gray-600 max-w-2xl mx-auto">
-              Visit us at ADNEC in Abu Dhabi or Al Ain for Kids Camp and
-              Football Clinic sessions.
+              Visit us at ADNEC in Abu Dhabi or Al Ain for Kids Camp sessions.
             </p>
           </div>
 
@@ -216,14 +218,16 @@ export default function Layout({ children }) {
                     Kids Camp
                   </Link>
                 </li>
-                <li>
-                  <Link
-                    to="/football-clinic"
-                    className="text-gray-400 hover:text-red-400"
-                  >
-                    Football Clinic
-                  </Link>
-                </li>
+                {FOOTBALL_CLINIC_ENABLED && (
+                  <li>
+                    <Link
+                      to="/football-clinic"
+                      className="text-gray-400 hover:text-red-400"
+                    >
+                      Football Clinic
+                    </Link>
+                  </li>
+                )}
               </ul>
             </div>
             <div>

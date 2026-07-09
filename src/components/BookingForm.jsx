@@ -61,8 +61,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isAbuDhabi = selectedLocation !== "alAin";
-  const abuDhabiNewStartDate = "2026-07-13";
-  const abuDhabiFullyBookedCutoff = new Date("2026-07-13T00:00:00");
+  const abuDhabiNewStartDate = "2026-07-17";
+  const abuDhabiFullyBookedCutoff = new Date("2026-07-17T00:00:00");
 
   const showAbuDhabiNotice =
     isAbuDhabi && new Date() < abuDhabiFullyBookedCutoff;
@@ -103,7 +103,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
       if (age < 4) return "Child must be at least 4 years old";
       if (age > 19) return "Child must be 19 years old or younger";
     } else {
-      if (age < 4) return "Child must be at least 4 years old";
+      if (age < 3) return "Child must be at least 3 years old";
       if (age > 14) return "Child must be 14 years old or younger";
     }
     return null;
@@ -657,12 +657,12 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
               <Calendar className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
               <div>
                 <p className="text-amber-800 font-semibold text-sm">
-                  Registration is not valid before 13th July
+                  Registration is not valid before 17th July
                 </p>
                 <p className="text-amber-700 text-xs mt-0.5 leading-relaxed">
                   Due to overwhelming demand, this week's camp is fully booked.
                   Please select a start date from{" "}
-                  <span className="font-semibold">13th July</span> onwards to
+                  <span className="font-semibold">17th July</span> onwards to
                   secure your place.
                 </p>
               </div>
@@ -907,7 +907,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                         />
                         <p className="text-xs text-gray-500 mt-1">
                           Child must be{" "}
-                          {campType === "footballClinic" ? "4-19" : "4-14"}{" "}
+                          {campType === "footballClinic" ? "4-19" : "3-14"}{" "}
                           years old
                         </p>
                         {errors[`childDateOfBirth_${idx}`] && (

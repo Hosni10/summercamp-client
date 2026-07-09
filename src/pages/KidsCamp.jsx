@@ -29,6 +29,7 @@ import fullImage from "../assets/kids-camp.jpeg";
 import coachImage from "../assets/coach.jpeg";
 import BookingForm from "../components/BookingForm.jsx";
 import { useNavigate } from "react-router-dom";
+import { FOOTBALL_CLINIC_ENABLED } from "../config/features.js";
 
 const membershipFeatures = [
   "Full day camp activities",
@@ -226,20 +227,26 @@ function KidsCamp() {
       buttonText: "Book Now",
       buttonAction: "book",
     },
-    {
-      image: coachImage,
-      title: "Football Clinic",
-      subtitle: "Professional Football Training",
-      description:
-        "Specialized football training for all skill levels. Professional coaching, tactical training, and match play experience.",
-      badge: "Professional Coaching",
-      buttonText: "View Football Clinic",
-      buttonAction: "football",
-    },
+    ...(FOOTBALL_CLINIC_ENABLED
+      ? [
+          {
+            image: coachImage,
+            title: "Football Clinic",
+            subtitle: "Professional Football Training",
+            description:
+              "Specialized football training for all skill levels. Professional coaching, tactical training, and match play experience.",
+            badge: "Professional Coaching",
+            buttonText: "View Football Clinic",
+            buttonAction: "football",
+          },
+        ]
+      : []),
   ];
 
   // Auto-slide functionality
   useEffect(() => {
+    if (slides.length <= 1) return;
+
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % slides.length);
     }, 7000); // Change slide every 7 seconds
@@ -363,33 +370,39 @@ function KidsCamp() {
         </div>
 
         {/* Navigation Arrows */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full transition-colors"
-        >
-          <ChevronLeft className="h-6 w-6" />
-        </button>
-        <button
-          onClick={nextSlide}
-          className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full transition-colors"
-        >
-          <ChevronRight className="h-6 w-6" />
-        </button>
+        {slides.length > 1 && (
+          <>
+            <button
+              onClick={prevSlide}
+              className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full transition-colors"
+            >
+              <ChevronLeft className="h-6 w-6" />
+            </button>
+            <button
+              onClick={nextSlide}
+              className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white p-3 rounded-full transition-colors"
+            >
+              <ChevronRight className="h-6 w-6" />
+            </button>
+          </>
+        )}
 
         {/* Dots Navigation */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
-          {slides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`w-3 h-3 rounded-full transition-colors ${
-                index === currentSlide
-                  ? "bg-[#ed3227]"
-                  : "bg-white/50 hover:bg-white/75"
-              }`}
-            />
-          ))}
-        </div>
+        {slides.length > 1 && (
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-2">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`w-3 h-3 rounded-full transition-colors ${
+                  index === currentSlide
+                    ? "bg-[#ed3227]"
+                    : "bg-white/50 hover:bg-white/75"
+                }`}
+              />
+            ))}
+          </div>
+        )}
       </section>
 
       {/* Camp Details Section */}
