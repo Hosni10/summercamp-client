@@ -134,7 +134,7 @@ const campPlans = {
       name: "Full Camp (29 Days Access)",
       description:
         "29 days access for the full camp (Monday to Thursday each week)",
-      price: "3190",
+      price: "2640",
       features: [
         ...membershipFeatures,
         "Valid Monday to Thursday only",
