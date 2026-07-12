@@ -61,8 +61,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isAbuDhabi = selectedLocation !== "alAin";
-  const abuDhabiNewStartDate = "2026-07-17";
-  const abuDhabiFullyBookedCutoff = new Date("2026-07-17T00:00:00");
+  const abuDhabiNewStartDate = "2026-07-20";
+  const abuDhabiFullyBookedCutoff = new Date("2026-07-20T00:00:00");
 
   const showAbuDhabiNotice =
     isAbuDhabi && new Date() < abuDhabiFullyBookedCutoff;
@@ -657,12 +657,12 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
               <Calendar className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
               <div>
                 <p className="text-amber-800 font-semibold text-sm">
-                  Registration is not valid before 17th July
+                  Registration is not valid before 20th July
                 </p>
                 <p className="text-amber-700 text-xs mt-0.5 leading-relaxed">
                   Due to overwhelming demand, this week's camp is fully booked.
                   Please select a start date from{" "}
-                  <span className="font-semibold">17th July</span> onwards to
+                  <span className="font-semibold">20th July</span> onwards to
                   secure your place.
                 </p>
               </div>
