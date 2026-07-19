@@ -12,7 +12,7 @@ import {
 } from "./ui/select.jsx";
 import { Textarea } from "./ui/textarea.jsx";
 import { Badge } from "./ui/badge.jsx";
-import { X, Calendar, User, Phone, Mail, MapPin } from "lucide-react";
+import { X, Calendar, AlertTriangle, User, Phone, Mail, MapPin } from "lucide-react";
 import {
   format,
   addDays,
@@ -655,17 +655,26 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
           {showAbuDhabiNotice && (
             <div className="mb-6 flex items-start gap-3 bg-amber-50 border border-amber-300 rounded-lg px-4 py-3">
               <Calendar className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
-              <div>
+              <div className="flex-1 min-w-0">
                 <p className="text-amber-800 font-semibold text-sm">
-                  Registration is not valid before 20th July
+                  High capacity — over 80% registered!
                 </p>
                 <p className="text-amber-700 text-xs mt-0.5 leading-relaxed">
-                  Due to overwhelming demand, this week's camp is fully booked.
-                  Please select a start date from{" "}
-                  <span className="font-semibold">20th July</span> onwards to
-                  secure your place.
+                  Due to overwhelming demand and high capacity, registered users
+                  are over <span className="font-semibold">80%</span>.
+                </p>
+                <p className="text-amber-700 text-xs leading-relaxed">
+                  The system will{" "}
+                  <span className="font-semibold">stop taking registrations</span>{" "}
+                  as soon as the remaining spots are filled.
+                </p>
+                <p className="text-amber-700 text-xs leading-relaxed">
+                  Registration is still open starting tomorrow,{" "}
+                  <span className="font-semibold">20th July</span> — hurry up to
+                  secure your spot!
                 </p>
               </div>
+              <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
             </div>
           )}
 
