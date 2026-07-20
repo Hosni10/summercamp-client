@@ -61,8 +61,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isAbuDhabi = selectedLocation !== "alAin";
-  const abuDhabiNewStartDate = "2026-07-20";
-  const abuDhabiFullyBookedCutoff = new Date("2026-07-20T00:00:00");
+  const abuDhabiNewStartDate = "2026-07-27";
+  const abuDhabiFullyBookedCutoff = new Date("2026-07-27T00:00:00");
 
   const showAbuDhabiNotice =
     isAbuDhabi && new Date() < abuDhabiFullyBookedCutoff;
@@ -669,8 +669,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                   as soon as the remaining spots are filled.
                 </p>
                 <p className="text-amber-700 text-xs leading-relaxed">
-                  Registration is still open starting tomorrow,{" "}
-                  <span className="font-semibold">20th July</span> — hurry up to
+                  Registration will begin again on{" "}
+                  <span className="font-semibold">27th July</span> — hurry up to
                   secure your spot!
                 </p>
               </div>
