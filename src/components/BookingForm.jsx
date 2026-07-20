@@ -466,13 +466,6 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
       return;
     }
 
-    if (isAbuDhabiRegistrationClosed) {
-      toast.error(
-        "We have full capacity this week until 24th July. You can register starting from 24th July."
-      );
-      return;
-    }
-
     if (finalTotal <= 0) {
       try {
         await handlePaymentSuccess({
