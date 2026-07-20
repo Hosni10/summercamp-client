@@ -61,10 +61,10 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isAbuDhabi = selectedLocation !== "alAin";
-  const abuDhabiNewStartDate = "2026-07-27";
-  const abuDhabiFullyBookedCutoff = new Date("2026-07-27T00:00:00");
+  const abuDhabiNewStartDate = "2026-07-24";
+  const abuDhabiFullyBookedCutoff = new Date("2026-07-24T00:00:00");
 
-  const showAbuDhabiNotice =
+  const isAbuDhabiRegistrationClosed =
     isAbuDhabi && new Date() < abuDhabiFullyBookedCutoff;
 
   // Set default start date and reset day selection when plan or location changes
@@ -466,6 +466,13 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
       return;
     }
 
+    if (isAbuDhabiRegistrationClosed) {
+      toast.error(
+        "We have full capacity this week until 24th July. You can register starting from 24th July."
+      );
+      return;
+    }
+
     if (finalTotal <= 0) {
       try {
         await handlePaymentSuccess({
@@ -652,26 +659,21 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
           </div>
 
           {/* Abu Dhabi early registration notice */}
-          {showAbuDhabiNotice && (
+          {isAbuDhabiRegistrationClosed && (
             <div className="mb-6 flex items-start gap-3 bg-amber-50 border border-amber-300 rounded-lg px-4 py-3">
               <Calendar className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
               <div className="flex-1 min-w-0">
                 <p className="text-amber-800 font-semibold text-sm">
-                  High capacity — over 80% registered!
+                  Full capacity this week
                 </p>
                 <p className="text-amber-700 text-xs mt-0.5 leading-relaxed">
-                  Due to overwhelming demand and high capacity, registered users
-                  are over <span className="font-semibold">80%</span>.
+                  Due to overwhelming demand, we have full capacity this week
+                  until <span className="font-semibold">24th July</span>.
                 </p>
                 <p className="text-amber-700 text-xs leading-relaxed">
-                  The system will{" "}
-                  <span className="font-semibold">stop taking registrations</span>{" "}
-                  as soon as the remaining spots are filled.
-                </p>
-                <p className="text-amber-700 text-xs leading-relaxed">
-                  Registration will begin again on{" "}
-                  <span className="font-semibold">27th July</span> — hurry up to
-                  secure your spot!
+                  You can register starting from{" "}
+                  <span className="font-semibold">24th July</span> — hurry up to
+                  register your kid!
                 </p>
               </div>
               <AlertTriangle className="h-5 w-5 text-amber-600 mt-0.5 shrink-0" />
@@ -1116,8 +1118,15 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={isSubmitting}>
-                {finalTotal <= 0 ? "Complete Booking" : "Proceed to Payment"}
+              <Button
+                type="submit"
+                disabled={isSubmitting || isAbuDhabiRegistrationClosed}
+              >
+                {isAbuDhabiRegistrationClosed
+                  ? "Registration Opens 24th July"
+                  : finalTotal <= 0
+                    ? "Complete Booking"
+                    : "Proceed to Payment"}
               </Button>
             </div>
           </form>
