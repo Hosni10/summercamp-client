@@ -1118,15 +1118,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
               <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || isAbuDhabiRegistrationClosed}
-              >
-                {isAbuDhabiRegistrationClosed
-                  ? "Registration Opens 24th July"
-                  : finalTotal <= 0
-                    ? "Complete Booking"
-                    : "Proceed to Payment"}
+              <Button type="submit" disabled={isSubmitting}>
+                {finalTotal <= 0 ? "Complete Booking" : "Proceed to Payment"}
               </Button>
             </div>
           </form>
