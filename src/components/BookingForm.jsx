@@ -61,8 +61,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const isAbuDhabi = selectedLocation !== "alAin";
-  const abuDhabiNewStartDate = "2026-07-24";
-  const abuDhabiFullyBookedCutoff = new Date("2026-07-24T00:00:00");
+  const abuDhabiNewStartDate = "2026-07-31";
+  const abuDhabiFullyBookedCutoff = new Date("2026-07-31T00:00:00");
 
   const isAbuDhabiRegistrationClosed =
     isAbuDhabi && new Date() < abuDhabiFullyBookedCutoff;
@@ -661,11 +661,11 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                 </p>
                 <p className="text-amber-700 text-xs mt-0.5 leading-relaxed">
                   Due to overwhelming demand, we have full capacity this week
-                  until <span className="font-semibold">24th July</span>.
+                  until <span className="font-semibold">31st July</span>.
                 </p>
                 <p className="text-amber-700 text-xs leading-relaxed">
                   You can register starting from{" "}
-                  <span className="font-semibold">24th July</span> — hurry up to
+                  <span className="font-semibold">31st July</span> — hurry up to
                   register your kid!
                 </p>
               </div>
