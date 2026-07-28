@@ -30,6 +30,8 @@ import coachImage from "../assets/coach.jpeg";
 import BookingForm from "../components/BookingForm.jsx";
 import { useNavigate } from "react-router-dom";
 import { FOOTBALL_CLINIC_ENABLED } from "../config/features.js";
+import { applyAlAinFullCampPricing } from "../lib/alAinCampPricing.js";
+import { applyAbuDhabiFullCampPricing } from "../lib/abuDhabiCampPricing.js";
 
 const membershipFeatures = [
   "Full day camp activities",
@@ -74,9 +76,13 @@ const campPlans = {
     },
     {
       name: "Full Camp Access",
-      description: "Unlimited access to all camp days and activities",
+      description:
+        "Remaining camp days until 23 August (Monday to Friday each week)",
       price: "4,864",
-      features: membershipFeatures,
+      features: [
+        ...membershipFeatures,
+        "Price updates daily based on remaining camp days",
+      ],
       popular: false,
     },
   ],
@@ -131,13 +137,14 @@ const campPlans = {
       ],
     },
     {
-      name: "Full Camp (26 Days Access)",
+      name: "Full Camp",
       description:
-        "26 days access for the full camp (Monday to Thursday each week)",
+        "Remaining camp days until 19 August (Monday to Thursday each week)",
       price: "2640",
       features: [
         ...membershipFeatures,
         "Valid Monday to Thursday only",
+        "Price updates daily based on remaining camp days",
       ],
     },
   ],
@@ -266,8 +273,8 @@ function KidsCamp() {
     setCurrentSlide(index);
   };
 
-  const handlePlanSelect = (plan) => {
-    setSelectedPlan(plan);
+  const handlePlanSelect = (plan, planIndex) => {
+    setSelectedPlan(campPlans[selectedLocation][planIndex]);
     setShowBookingForm(true);
   };
 
@@ -288,6 +295,13 @@ function KidsCamp() {
   const handleBookNowClick = () => {
     document.getElementById("pricing").scrollIntoView({ behavior: "smooth" });
   };
+
+  const getDisplayPlans = (location) =>
+    campPlans[location].map((plan) => {
+      if (location === "alAin") return applyAlAinFullCampPricing(plan);
+      if (location === "abuDhabi") return applyAbuDhabiFullCampPricing(plan);
+      return plan;
+    });
 
   const handleSlideButtonClick = () => {
     const currentSlideData = slides[currentSlide];
@@ -659,7 +673,7 @@ function KidsCamp() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {campPlans[selectedLocation].map((plan, index) => (
+            {getDisplayPlans(selectedLocation).map((plan, index) => (
               <Card
                 key={index}
                 className={`relative flex flex-col h-full overflow-hidden ${
@@ -694,7 +708,7 @@ function KidsCamp() {
                   <div className="mt-auto">
                     <Button
                       className="w-full bg-[#ed3227] hover:bg-[#ed3227]/90 text-white"
-                      onClick={() => handlePlanSelect(plan)}
+                      onClick={() => handlePlanSelect(plan, index)}
                     >
                       Buy Membership
                     </Button>

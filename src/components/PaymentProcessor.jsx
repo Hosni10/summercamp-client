@@ -22,6 +22,14 @@ import { Badge } from "./ui/badge.jsx";
 import { CreditCard, Lock, AlertCircle, X } from "lucide-react";
 import { loadStripe } from "@stripe/stripe-js";
 import { format, addDays } from "date-fns";
+import {
+  AL_AIN_CAMP_END,
+  getAlAinFullCampPricing,
+} from "../lib/alAinCampPricing.js";
+import {
+  ABU_DHABI_CAMP_END,
+  getAbuDhabiFullCampPricing,
+} from "../lib/abuDhabiCampPricing.js";
 
 // Stripe Elements styling
 const cardElementOptions = {
@@ -433,10 +441,14 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
         description =
           "16 days access within 1 month (Monday to Thursday each week)";
       } else if (planName.toLowerCase().includes("full camp")) {
-        end = new Date(start);
-        end.setDate(start.getDate() + 28); // 29 days: 7.25x Mon-Thu
-        description =
-          "29 days access for the full camp (Monday to Thursday each week)";
+        end = new Date(`${AL_AIN_CAMP_END}T00:00:00`);
+        const pricing = getAlAinFullCampPricing(startDate);
+        return {
+          start: format(start, "MMMM d, yyyy"),
+          end: format(end, "MMMM d, yyyy"),
+          days: pricing.days,
+          description: pricing.description,
+        };
       } else {
         end = start;
         description =
@@ -464,8 +476,14 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
         end.setDate(start.getDate() + 19);
         description = "20 days access within two weeks from start date";
       } else if (planName.toLowerCase().includes("full camp")) {
-        end = new Date("2026-08-23");
-        description = "Full camp access (unlimited days)";
+        end = new Date(`${ABU_DHABI_CAMP_END}T00:00:00`);
+        const pricing = getAbuDhabiFullCampPricing(startDate);
+        return {
+          start: format(start, "MMMM d, yyyy"),
+          end: format(end, "MMMM d, yyyy"),
+          days: pricing.days,
+          description: pricing.description,
+        };
       } else {
         end = start;
         description = "Access period based on selected plan";

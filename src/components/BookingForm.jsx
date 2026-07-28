@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "./ui/button.jsx";
 import { Input } from "./ui/input.jsx";
@@ -25,6 +25,20 @@ import axios from "axios";
 import PaymentProcessor from "./PaymentProcessor.jsx";
 import { fetchWithTimeout } from "../lib/stripe.js";
 import { toast, Toaster } from "sonner";
+import {
+  AL_AIN_CAMP_END,
+  applyAlAinFullCampPricing,
+  getAlAinDefaultStartDate,
+  getAlAinFullCampPricing,
+  isAlAinFullCampPlan,
+} from "../lib/alAinCampPricing.js";
+import {
+  ABU_DHABI_CAMP_END,
+  applyAbuDhabiFullCampPricing,
+  getAbuDhabiFullCampPricing,
+  getAbuDhabiFullCampStartDate,
+  isAbuDhabiFullCampPlan,
+} from "../lib/abuDhabiCampPricing.js";
 
 const DISCOUNT_CODES_ENABLED = true;
 
@@ -33,8 +47,9 @@ const WEEKDAYS_AL_AIN = ["Monday", "Tuesday", "Wednesday", "Thursday"];
 
 const getRequiredDayCount = (planName = "") => {
   const n = planName.toLowerCase();
-  if (n.includes("1-day") || n.includes("1 day")) return 1;
-  if (n.includes("3-days") || n.includes("3 days")) return 3;
+  if (n.includes("full camp")) return null;
+  if (/\b1[\s-]?day/.test(n)) return 1;
+  if (/\b3[\s-]?days?\b/.test(n)) return 3;
   return null;
 };
 
@@ -62,16 +77,53 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
 
   const isAbuDhabi = selectedLocation !== "alAin";
   const abuDhabiNewStartDate = "2026-07-31";
+  const abuDhabiEndDate = "2026-08-23";
+  const alAinEndDate = "2026-08-19";
   const abuDhabiFullyBookedCutoff = new Date("2026-07-31T00:00:00");
 
   const isAbuDhabiRegistrationClosed =
     isAbuDhabi && new Date() < abuDhabiFullyBookedCutoff;
 
+  const effectivePlan = useMemo(() => {
+    if (!selectedPlan) return null;
+
+    if (selectedLocation === "alAin" && isAlAinFullCampPlan(selectedPlan.name)) {
+      return applyAlAinFullCampPricing(
+        selectedPlan,
+        formData.startDate || getAlAinDefaultStartDate()
+      );
+    }
+
+    if (
+      selectedLocation === "abuDhabi" &&
+      isAbuDhabiFullCampPlan(selectedPlan.name)
+    ) {
+      const startDate = getAbuDhabiFullCampStartDate(
+        formData.startDate,
+        abuDhabiNewStartDate
+      );
+
+      return applyAbuDhabiFullCampPricing(selectedPlan, startDate);
+    }
+
+    return selectedPlan;
+  }, [selectedPlan, selectedLocation, formData.startDate, abuDhabiNewStartDate]);
+
   // Set default start date and reset day selection when plan or location changes
   useEffect(() => {
     if (selectedPlan) {
-      const defaultDate =
-        selectedLocation !== "alAin" ? abuDhabiNewStartDate : "2026-07-01";
+      let defaultDate;
+      if (selectedLocation === "abuDhabi") {
+        if (isAbuDhabiFullCampPlan(selectedPlan.name)) {
+          defaultDate = getAbuDhabiFullCampStartDate("", abuDhabiNewStartDate);
+        } else {
+          defaultDate = abuDhabiNewStartDate;
+        }
+      } else if (isAlAinFullCampPlan(selectedPlan.name)) {
+        defaultDate = getAlAinDefaultStartDate();
+      } else {
+        defaultDate = "2026-07-01";
+      }
       setFormData((prev) => ({ ...prev, startDate: defaultDate, selectedDays: [] }));
     }
   }, [selectedPlan, selectedLocation]);
@@ -110,7 +162,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   };
 
   const calculateChildPrice = (childIndex) => {
-    const basePrice = parseInt(selectedPlan.price.replace(/,/g, "")) || 0;
+    const basePrice =
+      parseInt(effectivePlan?.price.replace(/,/g, "") || "0") || 0;
 
     // If a discount code is applied, apply it to all children
     if (DISCOUNT_CODES_ENABLED && appliedDiscount > 0) {
@@ -127,7 +180,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     return Math.round((basePrice - discountAmount) * 10) / 10;
   };
 
-  const basePrice = parseInt(selectedPlan.price.replace(/,/g, "")) || 0;
+  const basePrice = parseInt(effectivePlan?.price.replace(/,/g, "") || "0") || 0;
   const numChildren = parseInt(formData.numberOfChildren) || 1;
 
   // Discount code logic
@@ -202,7 +255,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
   const taxAmount = Math.round(discountedTotal * 0.05 * 10) / 10;
   const finalTotal = Math.round((discountedTotal + taxAmount) * 10) / 10;
 
-  const requiredDayCount = getRequiredDayCount(selectedPlan?.name);
+  const requiredDayCount = getRequiredDayCount(effectivePlan?.name);
   const weekdayOptions = isAbuDhabi ? WEEKDAYS_ABU_DHABI : WEEKDAYS_AL_AIN;
 
   const handleDayToggle = (day) => {
@@ -248,7 +301,23 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     if (!formData.parentAddress.trim())
       errors.parentAddress = "Address is required";
     if (!formData.startDate) errors.startDate = "Start date is required";
-    if (!selectedPlan) errors.plan = "Please select a plan";
+    if (!effectivePlan) errors.plan = "Please select a plan";
+
+    if (
+      selectedLocation === "alAin" &&
+      isAlAinFullCampPlan(effectivePlan?.name) &&
+      getAlAinFullCampPricing(formData.startDate).days === 0
+    ) {
+      errors.startDate = "No remaining camp days are available for this start date";
+    }
+
+    if (
+      isAbuDhabi &&
+      isAbuDhabiFullCampPlan(effectivePlan?.name) &&
+      getAbuDhabiFullCampPricing(formData.startDate).days === 0
+    ) {
+      errors.startDate = "No remaining camp days are available for this start date";
+    }
 
     if (requiredDayCount !== null && formData.selectedDays.length !== requiredDayCount) {
       errors.selectedDays = `Please select exactly ${requiredDayCount} day${requiredDayCount > 1 ? "s" : ""}`;
@@ -434,7 +503,11 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
     } else if (planName.toLowerCase().includes("full month")) {
       end = addDays(start, 30);
     } else if (planName.toLowerCase().includes("full camp")) {
-      end = new Date("2026-08-23");
+      if (isAbuDhabi) {
+        end = new Date(ABU_DHABI_CAMP_END);
+      } else {
+        end = new Date(AL_AIN_CAMP_END);
+      }
     } else {
       end = addDays(start, 1);
     }
@@ -455,7 +528,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
       childPrices,
       totalAmount,
       totalDiscount,
-      selectedPlan,
+      effectivePlan,
       formData,
     });
 
@@ -507,7 +580,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
 
     const bookingPayload = {
       ...formData,
-      plan: selectedPlan,
+      plan: effectivePlan,
       location: selectedLocation,
       pricing: {
         originalTotal,
@@ -601,7 +674,7 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
 
   const fullBookingData = {
     ...formData,
-    plan: selectedPlan,
+    plan: effectivePlan,
     location: selectedLocation,
     pricing: {
       originalTotal,
@@ -636,8 +709,8 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
             <div>
               <h2 className="text-2xl font-bold">Book Your Camp</h2>
               <p className="text-gray-600 mt-1">
-                {selectedPlan?.name?.toLowerCase().includes("football") ||
-                selectedPlan?.description?.toLowerCase().includes("football")
+                {effectivePlan?.name?.toLowerCase().includes("football") ||
+                effectivePlan?.description?.toLowerCase().includes("football")
                   ? `${
                       selectedLocation === "alAin" ? "Al Ain" : "Abu Dhabi"
                     } - Full day access to Football Clinic`
@@ -677,10 +750,17 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
           <div className="mb-6 p-4 bg-blue-50 rounded-lg">
             <div className="flex justify-between items-center">
               <div>
-                <h3 className="font-semibold text-lg">{selectedPlan?.name}</h3>
+                <h3 className="font-semibold text-lg">{effectivePlan?.name}</h3>
+                {(selectedLocation === "alAin" &&
+                  isAlAinFullCampPlan(effectivePlan?.name)) ||
+                (isAbuDhabi && isAbuDhabiFullCampPlan(effectivePlan?.name)) ? (
+                    <p className="text-sm text-gray-500 mt-1">
+                      {effectivePlan.description} · AED {effectivePlan.price}
+                    </p>
+                  ) : null}
                 <p className="text-gray-600">
-                  {selectedPlan?.name?.toLowerCase().includes("football") ||
-                  selectedPlan?.description?.toLowerCase().includes("football")
+                  {effectivePlan?.name?.toLowerCase().includes("football") ||
+                  effectivePlan?.description?.toLowerCase().includes("football")
                     ? `Full day access to Football Clinic - ${
                         selectedLocation === "alAin" ? "Al Ain" : "Abu Dhabi"
                       }`
@@ -960,12 +1040,23 @@ const BookingForm = ({ selectedPlan, selectedLocation, campType, onClose }) => {
                     id="startDate"
                     type="date"
                     min={isAbuDhabi ? abuDhabiNewStartDate : "2026-07-01"}
-                    max="2026-08-23"
+                    max={isAbuDhabi ? abuDhabiEndDate : alAinEndDate}
                     value={formData.startDate}
                     onChange={(e) =>
-                      setFormData({ ...formData, startDate: e.target.value })
+                      setFormData((prev) => ({
+                        ...prev,
+                        startDate: e.target.value,
+                      }))
                     }
                   />
+                  {(selectedLocation === "alAin" &&
+                    isAlAinFullCampPlan(effectivePlan?.name)) ||
+                  (isAbuDhabi && isAbuDhabiFullCampPlan(effectivePlan?.name)) ? (
+                      <p className="text-xs text-gray-500 mt-1">
+                        Full camp price updates based on remaining camp days until{" "}
+                        {isAbuDhabi ? "23 August" : "19 August"}.
+                      </p>
+                    ) : null}
                   {errors.startDate && (
                     <p className="text-red-500 text-sm mt-1">
                       {errors.startDate}
