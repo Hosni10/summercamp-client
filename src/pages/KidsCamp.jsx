@@ -62,29 +62,29 @@ const campPlans = {
       features: membershipFeatures,
       popular: true,
     },
-    {
-      name: "10-Days Access",
-      description: "Extended camp experience",
-      price: "1,280",
-      features: membershipFeatures,
-    },
-    {
-      name: "20-Days Access",
-      description: "Full summer camp experience",
-      price: "2,560",
-      features: membershipFeatures,
-    },
-    {
-      name: "Full Camp Access",
-      description:
-        "Remaining camp days until 23 August (Monday to Friday each week)",
-      price: "4,864",
-      features: [
-        ...membershipFeatures,
-        "Price updates daily based on remaining camp days",
-      ],
-      popular: false,
-    },
+    // {
+    //   name: "10-Days Access",
+    //   description: "Extended camp experience",
+    //   price: "1,280",
+    //   features: membershipFeatures,
+    // },
+    // {
+    //   name: "20-Days Access",
+    //   description: "Full summer camp experience",
+    //   price: "2,560",
+    //   features: membershipFeatures,
+    // },
+    // {
+    //   name: "Full Camp Access",
+    //   description:
+    //     "Remaining camp days until 23 August (Monday to Friday each week)",
+    //   price: "4,864",
+    //   features: [
+    //     ...membershipFeatures,
+    //     "Price updates daily based on remaining camp days",
+    //   ],
+    //   popular: false,
+    // },
   ],
   alAin: [
     // {
@@ -107,35 +107,35 @@ const campPlans = {
         "Valid Monday to Thursday only",
       ],
     },
-    {
-      name: "1 Week (4 Days Access)",
-      description: "4 days access within 1 week (Monday to Thursday)",
-      price: "440",
-      features: [
-        ...membershipFeatures,
-        "Valid Monday to Thursday only",
-      ],
-      popular: true,
-    },
-    {
-      name: "2 Weeks (8 Days Access)",
-      description: "8 days access within 2 weeks (Monday to Thursday)",
-      price: "880",
-      features: [
-        ...membershipFeatures,
-        "Valid Monday to Thursday only",
-      ],
-    },
-    {
-      name: "1 Month (16 Days Access)",
-      description:
-        "16 days access within 1 month (Monday to Thursday each week)",
-      price: "1760",
-      features: [
-        ...membershipFeatures,
-        "Valid Monday to Thursday only",
-      ],
-    },
+    // {
+    //   name: "1 Week (4 Days Access)",
+    //   description: "4 days access within 1 week (Monday to Thursday)",
+    //   price: "440",
+    //   features: [
+    //     ...membershipFeatures,
+    //     "Valid Monday to Thursday only",
+    //   ],
+    //   popular: true,
+    // },
+    // {
+    //   name: "2 Weeks (8 Days Access)",
+    //   description: "8 days access within 2 weeks (Monday to Thursday)",
+    //   price: "880",
+    //   features: [
+    //     ...membershipFeatures,
+    //     "Valid Monday to Thursday only",
+    //   ],
+    // },
+    // {
+    //   name: "1 Month (16 Days Access)",
+    //   description:
+    //     "16 days access within 1 month (Monday to Thursday each week)",
+    //   price: "1760",
+    //   features: [
+    //     ...membershipFeatures,
+    //     "Valid Monday to Thursday only",
+    //   ],
+    // },
     {
       name: "Full Camp",
       description:
