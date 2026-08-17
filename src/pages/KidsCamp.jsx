@@ -56,9 +56,9 @@ const campPlans = {
       features: membershipFeatures,
     },
     {
-      name: "5-Days Access",
+      name: "4-Days Access",
       description: "Complete summer camp experience",
-      price: "640",
+      price: "512",
       features: membershipFeatures,
       popular: true,
     },
@@ -140,7 +140,7 @@ const campPlans = {
       name: "Full Camp",
       description:
         "Remaining camp days until 19 August (Monday to Thursday each week)",
-      price: "2640",
+      price: "220",
       features: [
         ...membershipFeatures,
         "Valid Monday to Thursday only",
