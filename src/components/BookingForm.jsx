@@ -49,6 +49,7 @@ const getRequiredDayCount = (planName = "") => {
   const n = planName.toLowerCase();
   if (n.includes("full camp")) return null;
   if (/\b1[\s-]?day/.test(n)) return 1;
+  if (/\b2[\s-]?days?\b/.test(n)) return 2;
   if (/\b3[\s-]?days?\b/.test(n)) return 3;
   return null;
 };

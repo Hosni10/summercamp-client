@@ -459,6 +459,10 @@ const PaymentProcessor = ({ bookingData, onSuccess, onCancel, onError }) => {
       if (planName.toLowerCase().includes("1-day")) {
         end = start;
         description = "1 day access (Monday to Friday only)";
+      } else if (planName.toLowerCase().includes("2-day")) {
+        end = new Date(start);
+        end.setDate(start.getDate() + 1);
+        description = "2 days access within one week (Monday to Friday only)";
       } else if (planName.toLowerCase().includes("3-day")) {
         end = new Date(start);
         end.setDate(start.getDate() + 2);

@@ -29,7 +29,10 @@ import fullImage from "../assets/kids-camp.jpeg";
 import coachImage from "../assets/coach.jpeg";
 import BookingForm from "../components/BookingForm.jsx";
 import { useNavigate } from "react-router-dom";
-import { FOOTBALL_CLINIC_ENABLED } from "../config/features.js";
+import {
+  AL_AIN_MEMBERSHIPS_ENABLED,
+  FOOTBALL_CLINIC_ENABLED,
+} from "../config/features.js";
 import { applyAlAinFullCampPricing } from "../lib/alAinCampPricing.js";
 import { applyAbuDhabiFullCampPricing } from "../lib/abuDhabiCampPricing.js";
 
@@ -50,15 +53,9 @@ const campPlans = {
       features: membershipFeatures,
     },
     {
-      name: "3-Days Access",
-      description: "Great for a short camp experience",
-      price: "480",
-      features: membershipFeatures,
-    },
-    {
-      name: "4-Days Access",
-      description: "Complete summer camp experience",
-      price: "512",
+      name: "2-Days Access",
+      description: "Remaining camp days",
+      price: "256",
       features: membershipFeatures,
       popular: true,
     },
@@ -644,7 +641,6 @@ function KidsCamp() {
             </p>
           </div>
 
-          {/* Location Selection */}
           <div className="flex justify-center mb-8">
             <div className="flex bg-gray-100 rounded-lg p-1">
               <button
@@ -658,21 +654,23 @@ function KidsCamp() {
                 <MapPin className="h-4 w-4 inline mr-2" />
                 Abu Dhabi
               </button>
-              <button
-                className={`px-6 py-3 rounded-md font-medium transition-colors ${
-                  selectedLocation === "alAin"
-                    ? "bg-[#ed3227] text-white"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-                onClick={() => setSelectedLocation("alAin")}
-              >
-                <MapPin className="h-4 w-4 inline mr-2" />
-                Al Ain
-              </button>
+              {AL_AIN_MEMBERSHIPS_ENABLED && (
+                <button
+                  className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                    selectedLocation === "alAin"
+                      ? "bg-[#ed3227] text-white"
+                      : "text-gray-600 hover:text-gray-900"
+                  }`}
+                  onClick={() => setSelectedLocation("alAin")}
+                >
+                  <MapPin className="h-4 w-4 inline mr-2" />
+                  Al Ain
+                </button>
+              )}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
             {getDisplayPlans(selectedLocation).map((plan, index) => (
               <Card
                 key={index}
