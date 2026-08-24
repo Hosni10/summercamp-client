@@ -31,6 +31,7 @@ import BookingForm from "../components/BookingForm.jsx";
 import { useNavigate } from "react-router-dom";
 import {
   AL_AIN_MEMBERSHIPS_ENABLED,
+  CAMP_BOOKINGS_ENABLED,
   FOOTBALL_CLINIC_ENABLED,
 } from "../config/features.js";
 import { applyAlAinFullCampPricing } from "../lib/alAinCampPricing.js";
@@ -227,8 +228,10 @@ function KidsCamp() {
       subtitle: "Where Champions Are Made",
       description:
         "Join our comprehensive summer program designed to develop young talents through sports, education, and fun activities.",
-      badge: "Summer 2026 Registration Open",
-      buttonText: "Book Now",
+      badge: CAMP_BOOKINGS_ENABLED
+        ? "Summer 2026 Registration Open"
+        : "Stay Tuned",
+      buttonText: CAMP_BOOKINGS_ENABLED ? "Book Now" : "Stay Tuned",
       buttonAction: "book",
     },
     ...(FOOTBALL_CLINIC_ENABLED
@@ -271,6 +274,7 @@ function KidsCamp() {
   };
 
   const handlePlanSelect = (plan, planIndex) => {
+    if (!CAMP_BOOKINGS_ENABLED) return;
     setSelectedPlan(campPlans[selectedLocation][planIndex]);
     setShowBookingForm(true);
   };
@@ -632,131 +636,168 @@ function KidsCamp() {
       {/* Pricing Section */}
       <section id="pricing" className="py-16 px-4 sm:px-6 lg:px-8 bg-white">
         <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
-              Choose Your Membership
-            </h2>
-            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-              Select the perfect plan for your child's summer camp experience
-            </p>
-          </div>
+          {CAMP_BOOKINGS_ENABLED ? (
+            <>
+              <div className="text-center mb-12">
+                <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+                  Choose Your Membership
+                </h2>
+                <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                  Select the perfect plan for your child's summer camp experience
+                </p>
+              </div>
 
-          <div className="flex justify-center mb-8">
-            <div className="flex bg-gray-100 rounded-lg p-1">
-              <button
-                className={`px-6 py-3 rounded-md font-medium transition-colors ${
-                  selectedLocation === "abuDhabi"
-                    ? "bg-[#ed3227] text-white"
-                    : "text-gray-600 hover:text-gray-900"
-                }`}
-                onClick={() => setSelectedLocation("abuDhabi")}
-              >
-                <MapPin className="h-4 w-4 inline mr-2" />
-                Abu Dhabi
-              </button>
-              {AL_AIN_MEMBERSHIPS_ENABLED && (
-                <button
-                  className={`px-6 py-3 rounded-md font-medium transition-colors ${
-                    selectedLocation === "alAin"
-                      ? "bg-[#ed3227] text-white"
-                      : "text-gray-600 hover:text-gray-900"
-                  }`}
-                  onClick={() => setSelectedLocation("alAin")}
-                >
-                  <MapPin className="h-4 w-4 inline mr-2" />
-                  Al Ain
-                </button>
-              )}
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
-            {getDisplayPlans(selectedLocation).map((plan, index) => (
-              <Card
-                key={index}
-                className={`relative flex flex-col h-full overflow-hidden ${
-                  plan.popular
-                    ? "border-2 border-[#ed3227] shadow-lg"
-                    : "hover:shadow-lg"
-                } transition-shadow duration-300`}
-              >
-                {plan.popular && (
-                  <div className="absolute top-0 right-0">
-                    <Badge className="rounded-none rounded-bl-lg bg-[#ed3227] text-white">
-                      Most Popular
-                    </Badge>
-                  </div>
-                )}
-                <CardHeader>
-                  <CardTitle className="text-xl">{plan.name}</CardTitle>
-                  <CardDescription>{plan.description}</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1">
-                  <div className="mb-6">
-                    <span className="text-3xl font-bold">AED {plan.price}</span>
-                  </div>
-                  <ul className="space-y-2 mb-6 flex-1">
-                    {plan.features.map((feature, index) => (
-                      <li key={index} className="flex items-start text-sm">
-                        <Check className="h-4 w-4 mr-2 text-[#ed3227] mt-0.5 flex-shrink-0" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-auto">
-                    <Button
-                      className="w-full bg-[#ed3227] hover:bg-[#ed3227]/90 text-white"
-                      onClick={() => handlePlanSelect(plan, index)}
+              <div className="flex justify-center mb-8">
+                <div className="flex bg-gray-100 rounded-lg p-1">
+                  <button
+                    className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                      selectedLocation === "abuDhabi"
+                        ? "bg-[#ed3227] text-white"
+                        : "text-gray-600 hover:text-gray-900"
+                    }`}
+                    onClick={() => setSelectedLocation("abuDhabi")}
+                  >
+                    <MapPin className="h-4 w-4 inline mr-2" />
+                    Abu Dhabi
+                  </button>
+                  {AL_AIN_MEMBERSHIPS_ENABLED && (
+                    <button
+                      className={`px-6 py-3 rounded-md font-medium transition-colors ${
+                        selectedLocation === "alAin"
+                          ? "bg-[#ed3227] text-white"
+                          : "text-gray-600 hover:text-gray-900"
+                      }`}
+                      onClick={() => setSelectedLocation("alAin")}
                     >
-                      Buy Membership
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          {/* Sibling Discount Info */}
-          <div className="mt-12 text-center">
-            <Card className="max-w-2xl mx-auto bg-gradient-to-r from-[#ed3227]/10 to-[#ed3227]/5 border-[#ed3227]/20">
-              <CardContent className="pt-6">
-                <h3 className="text-xl font-bold text-[#ed3227] mb-4">
-                  Sibling Discounts
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
-                  <div className="flex items-center justify-center space-x-2">
-                    <Users className="h-5 w-5 text-[#ed3227]" />
-                    <span>
-                      <strong>1st Kid:</strong> Full Price
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-center space-x-2">
-                    <Users className="h-5 w-5 text-[#ed3227]" />
-                    <span>
-                      <strong>2nd Kid:</strong> 10% off
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-center space-x-2">
-                    <Users className="h-5 w-5 text-[#ed3227]" />
-                    <span>
-                      <strong>3rd Kid:</strong> 15% off
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-center space-x-2">
-                    <Users className="h-5 w-5 text-[#ed3227]" />
-                    <span>
-                      <strong>4th Kid:</strong> 20% off
-                    </span>
-                  </div>
+                      <MapPin className="h-4 w-4 inline mr-2" />
+                      Al Ain
+                    </button>
+                  )}
                 </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 gap-6 max-w-4xl mx-auto">
+                {getDisplayPlans(selectedLocation).map((plan, index) => (
+                  <Card
+                    key={index}
+                    className={`relative flex flex-col h-full overflow-hidden ${
+                      plan.popular
+                        ? "border-2 border-[#ed3227] shadow-lg"
+                        : "hover:shadow-lg"
+                    } transition-shadow duration-300`}
+                  >
+                    {plan.popular && (
+                      <div className="absolute top-0 right-0">
+                        <Badge className="rounded-none rounded-bl-lg bg-[#ed3227] text-white">
+                          Most Popular
+                        </Badge>
+                      </div>
+                    )}
+                    <CardHeader>
+                      <CardTitle className="text-xl">{plan.name}</CardTitle>
+                      <CardDescription>{plan.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent className="flex flex-col flex-1">
+                      <div className="mb-6">
+                        <span className="text-3xl font-bold">
+                          AED {plan.price}
+                        </span>
+                      </div>
+                      <ul className="space-y-2 mb-6 flex-1">
+                        {plan.features.map((feature, index) => (
+                          <li key={index} className="flex items-start text-sm">
+                            <Check className="h-4 w-4 mr-2 text-[#ed3227] mt-0.5 flex-shrink-0" />
+                            <span>{feature}</span>
+                          </li>
+                        ))}
+                      </ul>
+                      <div className="mt-auto">
+                        <Button
+                          className="w-full bg-[#ed3227] hover:bg-[#ed3227]/90 text-white"
+                          onClick={() => handlePlanSelect(plan, index)}
+                        >
+                          Buy Membership
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+
+              {/* Sibling Discount Info */}
+              <div className="mt-12 text-center">
+                <Card className="max-w-2xl mx-auto bg-gradient-to-r from-[#ed3227]/10 to-[#ed3227]/5 border-[#ed3227]/20">
+                  <CardContent className="pt-6">
+                    <h3 className="text-xl font-bold text-[#ed3227] mb-4">
+                      Sibling Discounts
+                    </h3>
+                    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                      <div className="flex items-center justify-center space-x-2">
+                        <Users className="h-5 w-5 text-[#ed3227]" />
+                        <span>
+                          <strong>1st Kid:</strong> Full Price
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-center space-x-2">
+                        <Users className="h-5 w-5 text-[#ed3227]" />
+                        <span>
+                          <strong>2nd Kid:</strong> 10% off
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-center space-x-2">
+                        <Users className="h-5 w-5 text-[#ed3227]" />
+                        <span>
+                          <strong>3rd Kid:</strong> 15% off
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-center space-x-2">
+                        <Users className="h-5 w-5 text-[#ed3227]" />
+                        <span>
+                          <strong>4th Kid:</strong> 20% off
+                        </span>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+            </>
+          ) : (
+            <Card className="max-w-2xl mx-auto text-center border-2 border-[#ed3227]/20 shadow-lg bg-gradient-to-b from-[#ed3227]/5 to-white">
+              <CardHeader>
+                <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-[#ed3227]/10">
+                  <Calendar className="h-8 w-8 text-[#ed3227]" />
+                </div>
+                <Badge className="mx-auto mb-3 w-fit bg-[#ed3227] text-white hover:bg-[#ed3227]/90">
+                  Registration Paused
+                </Badge>
+                <CardTitle className="text-3xl md:text-4xl">
+                  Stay Tuned for Upcoming Camps
+                </CardTitle>
+                <CardDescription className="text-base mt-3">
+                  Memberships are currently paused. New camp dates and plans
+                  will be announced soon — we can't wait to welcome your kids
+                  back.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button
+                  className="bg-[#ed3227] hover:bg-[#ed3227]/90 text-white px-8"
+                  onClick={() =>
+                    document
+                      .getElementById("contact")
+                      ?.scrollIntoView({ behavior: "smooth" })
+                  }
+                >
+                  Contact Us
+                </Button>
               </CardContent>
             </Card>
-          </div>
+          )}
         </div>
       </section>
 
       {/* Booking Form Modal */}
-      {showBookingForm && selectedPlan && (
+      {CAMP_BOOKINGS_ENABLED && showBookingForm && selectedPlan && (
         <BookingForm
           selectedPlan={selectedPlan}
           selectedLocation={selectedLocation}
